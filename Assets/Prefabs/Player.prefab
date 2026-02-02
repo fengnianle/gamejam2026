@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3314070931206269932}
   - component: {fileID: 1452319573726564350}
   - component: {fileID: 7413392077695492074}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31,7 +31,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.174, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6702249961044805238}
   m_Father: {fileID: 2723112865837930511}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3314070931206269932
@@ -120,9 +121,76 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   idleAnimation: {fileID: 7400000, guid: 4b705ff8089eb574a8d6751244efc62b, type: 2}
-  attackXAnimation: {fileID: 0}
-  attackYAnimation: {fileID: 0}
-  attackBAnimation: {fileID: 0}
+  attackXAnimation: {fileID: 7400000, guid: b5b5662ccc1c0524f91fa13e1ca56488, type: 2}
+  attackYAnimation: {fileID: 7400000, guid: 03d635ca360179a4caef5793211a1631, type: 2}
+  attackBAnimation: {fileID: 7400000, guid: cc48c8d64d7c8ac41b91ac183bdc67e2, type: 2}
+  attackWindow: {fileID: 0}
+  attackDamage: 10
+  maxHealth: 100
+  currentHealth: 100
+--- !u!1 &5530388410072996620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6702249961044805238}
+  - component: {fileID: 6638942741418924518}
+  m_Layer: 6
+  m_Name: AttackWindow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6702249961044805238
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5530388410072996620}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1504436795142387576}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6638942741418924518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5530388410072996620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a502ed0d74103e34b88ae817aae619d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 0
+  damage: 10
+  targetTag: Boss
+  isWindowActive: 0
+  windowStartTime: 0
+  windowDuration: 0
+  onWindowStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onWindowEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  onCounterSuccess:
+    m_PersistentCalls:
+      m_Calls: []
+  onAttackHit:
+    m_PersistentCalls:
+      m_Calls: []
+  showDebugInfo: 1
 --- !u!1 &8957818055454923021
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,7 +200,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2723112865837930511}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}

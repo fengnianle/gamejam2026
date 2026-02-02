@@ -13,7 +13,7 @@ public static class ComponentValidator
     {
         if (animator == null)
         {
-            Debug.LogError($"{controllerName}: 未找到 Animator 组件！请确保已添加Animator组件。");
+            GameLogger.LogComponentValidation($"{controllerName}: 未找到 Animator 组件！请确保已添加Animator组件。", LogType.Error);
             return false;
         }
         return true;
@@ -29,13 +29,13 @@ public static class ComponentValidator
         AnimationClip attackBClip)
     {
         if (idleClip == null)
-            Debug.LogWarning($"{controllerName}: Idle动画未绑定！");
+            GameLogger.LogComponentValidation($"{controllerName}: Idle动画未绑定！", LogType.Warning);
         if (attackXClip == null)
-            Debug.LogWarning($"{controllerName}: AttackX动画未绑定！");
+            GameLogger.LogComponentValidation($"{controllerName}: AttackX动画未绑定！", LogType.Warning);
         if (attackYClip == null)
-            Debug.LogWarning($"{controllerName}: AttackY动画未绑定！");
+            GameLogger.LogComponentValidation($"{controllerName}: AttackY动画未绑定！", LogType.Warning);
         if (attackBClip == null)
-            Debug.LogWarning($"{controllerName}: AttackB动画未绑定！");
+            GameLogger.LogComponentValidation($"{controllerName}: AttackB动画未绑定！", LogType.Warning);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static class ComponentValidator
     {
         if (clip == null)
         {
-            Debug.LogWarning($"{controllerName}: {clipName} 动画未绑定！");
+            GameLogger.LogComponentValidation($"{controllerName}: {clipName} 动画未绑定！", LogType.Warning);
             return false;
         }
         return true;

@@ -1,24 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/* 
- * Unity组件绑定说明：
- * 1. 在Hierarchy中选择Boss对象
- * 2. 在Inspector中添加以下组件：
- *    - Animator组件（必需）：用于播放动画
- * 3. 将本脚本挂载到Boss对象上
- * 4. 在本脚本的Inspector面板中：
- *    - 将Idle动画片段拖拽到"Idle Animation"字段
- *    - 将Attack1动画片段拖拽到"Attack1 Animation"字段
- *    - 将Attack2动画片段拖拽到"Attack2 Animation"字段
- *    - 将Attack3动画片段拖拽到"Attack3 Animation"字段
- * 5. 在"动作序列"中添加动作：
- *    - 点击+号添加新动作
- *    - 选择动作类型（Idle/Attack1/Attack2/Attack3）
- *    - 设置每个动作的持续时间
- */
-
-public class BossController : MonoBehaviour
+/// <summary>
+/// Boss控制器
+/// 详细的组件绑定说明请查看项目根目录的 README.md 文件
+/// </summary>
+[RequireComponent(typeof(Animator))]
+public class BossController : MonoBehaviour, IDamageable
 {
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
@@ -32,6 +20,20 @@ public class BossController : MonoBehaviour
     
     [Tooltip("攻击3动画片段")]
     public AnimationClip attackBAnimation;
+
+    [Header("攻击判定设置")]
+    [Tooltip("攻击判定窗口对象（通常是子对象上的AttackWindow组件）")]
+    public AttackWindow attackWindow;
+    
+    [Tooltip("攻击伤害值")]
+    public float attackDamage = 15f;
+
+    [Header("生命值设置")]
+    [Tooltip("最大生命值")]
+    public float maxHealth = 200f;
+    
+    [Tooltip("当前生命值")]
+    public float currentHealth = 200f;
 
     [Header("动作序列设置")]
     [Tooltip("Boss的动作序列，按顺序执行")]
@@ -65,10 +67,24 @@ public class BossController : MonoBehaviour
         ComponentValidator.ValidateAnimationClips("BossController", 
             idleAnimation, attackXAnimation, attackYAnimation, attackBAnimation);
 
+        // 验证攻击判定窗口
+        if (attackWindow == null)
+        {
+            GameLogger.LogWarning("BossController: 未绑定AttackWindow组件！攻击将无法造成伤害。", "BossController");
+        }
+        else
+        {
+            // 设置攻击判定的伤害值
+            attackWindow.SetDamage(attackDamage);
+        }
+
+        // 初始化生命值
+        currentHealth = maxHealth;
+
         // 如果动作序列为空，添加默认序列
         if (actionSequence.Count == 0)
         {
-            Debug.LogWarning("BossController: 动作序列为空，添加默认序列。");
+            GameLogger.LogWarning("BossController: 动作序列为空，添加默认序列。", "BossController");
             actionSequence.Add(new BossAction { actionType = BossActionType.Attack1, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Attack2, duration = 1f });
@@ -109,7 +125,7 @@ public class BossController : MonoBehaviour
     {
         if (actionSequence.Count == 0)
         {
-            Debug.LogWarning("BossController: 动作序列为空，无法开始播放。");
+            GameLogger.LogWarning("BossController: 动作序列为空，无法开始播放。", "BossController");
             return;
         }
 
@@ -168,7 +184,7 @@ public class BossController : MonoBehaviour
         // 播放对应的动画
         PlayActionAnimation(currentAction.actionType);
 
-        Debug.Log($"BossController: 执行动作 {currentAction.actionType}，持续时间 {currentAction.duration} 秒");
+        GameLogger.LogBossAction($"执行动作 {currentAction.actionType}，持续时间 {currentAction.duration} 秒");
     }
 
     /// <summary>
@@ -190,7 +206,7 @@ public class BossController : MonoBehaviour
             }
             else
             {
-                Debug.Log("BossController: 动作序列播放完成。");
+                GameLogger.LogBossAction("动作序列播放完成。");
                 StopSequence();
             }
         }
@@ -247,6 +263,116 @@ public class BossController : MonoBehaviour
     public void ClearSequence()
     {
         actionSequence.Clear();
+    }
+
+    // ==================== 攻击判定窗口控制 ====================
+    
+    /// <summary>
+    /// 开启攻击判定窗口（由Animation Event调用）
+    /// 在攻击动画的合适帧添加此Event
+    /// </summary>
+    public void OnAttackHitboxStart()
+    {
+        GameLogger.LogAnimationEvent("Boss", "OnAttackHitboxStart");
+        
+        if (attackWindow != null)
+        {
+            // 根据当前动作类型设置攻击类型
+            if (actionSequence.Count > 0 && currentActionIndex < actionSequence.Count)
+            {
+                BossActionType currentAction = actionSequence[currentActionIndex].actionType;
+                AttackType attackType = currentAction switch
+                {
+                    BossActionType.Attack1 => AttackType.Attack1,
+                    BossActionType.Attack2 => AttackType.Attack2,
+                    BossActionType.Attack3 => AttackType.Attack3,
+                    _ => AttackType.Attack1
+                };
+                attackWindow.SetAttackType(attackType);
+            }
+            
+            attackWindow.StartWindow();
+        }
+        else
+        {
+            GameLogger.LogWarning("BossController: AttackWindow未绑定，无法启用攻击判定！", "BossController");
+        }
+    }
+
+    /// <summary>
+    /// 关闭攻击判定窗口（由Animation Event调用）
+    /// 在攻击动画结束前的合适帧添加此Event
+    /// </summary>
+    public void OnAttackHitboxEnd()
+    {
+        GameLogger.LogAnimationEvent("Boss", "OnAttackHitboxEnd");
+        
+        if (attackWindow != null)
+        {
+            attackWindow.EndWindow();
+        }
+    }
+
+    // ==================== 受伤系统 ====================
+    
+    /// <summary>
+    /// 接收伤害（实现IDamageable接口）
+    /// </summary>
+    public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+        GameLogger.LogDamageTaken("Boss", damage, currentHealth, maxHealth);
+
+        // 触发受伤效果（可以在这里添加受伤动画、音效等）
+        OnDamaged();
+
+        // 检查是否死亡
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    /// <summary>
+    /// 受伤时的响应
+    /// </summary>
+    void OnDamaged()
+    {
+        // 可以在这里添加：
+        // - 播放受伤动画
+        // - 播放受伤音效
+        // - 显示受伤特效
+        // - 进入下一阶段（如果Boss有多阶段）
+    }
+
+    /// <summary>
+    /// 死亡处理
+    /// </summary>
+    void Die()
+    {
+        GameLogger.LogDeath("Boss");
+        
+        // 停止动作序列
+        StopSequence();
+        
+        // 可以在这里添加：
+        // - 播放死亡动画
+        // - 禁用控制
+        // - 显示胜利界面
+        // - 掉落奖励
+        // - 触发下一阶段或结束战斗
+        
+        // 暂时禁用脚本
+        enabled = false;
+    }
+
+    /// <summary>
+    /// 恢复生命值
+    /// </summary>
+    public void Heal(float amount)
+    {
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        GameLogger.LogHeal("Boss", amount, currentHealth, maxHealth);
     }
 }
 
