@@ -6,35 +6,41 @@ using System.Collections.Generic;
 /// 详细的组件绑定说明请查看项目根目录的 README.md 文件
 /// </summary>
 [RequireComponent(typeof(Animator))]
-public class BossController : MonoBehaviour, IDamageable
+[RequireComponent(typeof(AttackWindow))]
+public class BossController : MonoBehaviour
 {
+    /// <summary>
+    /// 动画绑定
+    /// </summary>
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
     public AnimationClip idleAnimation;
     
-    [Tooltip("攻击1动画片段")]
+    [Tooltip("攻击X动画片段")]
     public AnimationClip attackXAnimation;
     
-    [Tooltip("攻击2动画片段")]
+    [Tooltip("攻击Y动画片段")]
     public AnimationClip attackYAnimation;
     
-    [Tooltip("攻击3动画片段")]
+    [Tooltip("攻击B动画片段")]
     public AnimationClip attackBAnimation;
 
-    [Header("攻击判定设置")]
-    [Tooltip("攻击判定窗口对象（通常是子对象上的AttackWindow组件）")]
-    public AttackWindow attackWindow;
-    
-    [Tooltip("攻击伤害值")]
-    public float attackDamage = 15f;
-
-    [Header("生命值设置")]
-    [Tooltip("最大生命值")]
+    /// <summary>
+    /// 定力值系统
+    /// </summary>
+    [Header("定力值系统")]
+    [Tooltip("最大定力值")]
     public float maxHealth = 200f;
     
-    [Tooltip("当前生命值")]
+    [Tooltip("当前定力值")]
     public float currentHealth = 200f;
+ 
+    [Tooltip("攻击力")]
+    public float attackDamage = 30f;
 
+    /// <summary>
+    /// 动作序列系统
+    /// </summary>
     [Header("动作序列设置")]
     [Tooltip("Boss的动作序列，按顺序执行")]
     public List<BossAction> actionSequence = new List<BossAction>();
@@ -48,48 +54,45 @@ public class BossController : MonoBehaviour, IDamageable
     [Tooltip("动作之间的间隔时间（秒）")]
     public float actionInterval = 1f;
 
+    /// <summary>
+    /// 组件获取
+    /// </summary>
     [Header("组件引用")]
+    [Tooltip("动画控制器（自动获取）")]
     private Animator animator;
+    [Tooltip("攻击判定窗口对象（自动获取）")]
+    private AttackWindow attackWindow;
 
+    /// <summary>
+    /// 动作执行状态
+    /// </summary>
     [Header("状态")]
     private int currentActionIndex = 0;
+    [Tooltip("是否当前正在执行动作")]
     private bool isPerformingAction = false;
+     [Tooltip("是否正在播放动作序列")]
     private bool isPlaying = false;
+    [Tooltip("当前动作执行的倒计时")]
     private float actionTimer = 0f;
 
+    /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Start()
     {
         // 获取Animator组件
         animator = GetComponent<Animator>();
+        attackWindow = GetComponent<AttackWindow>();
 
-        // 验证组件和动画绑定
-        ComponentValidator.ValidateAnimator(animator, "BossController");
-        ComponentValidator.ValidateAnimationClips("BossController", 
-            idleAnimation, attackXAnimation, attackYAnimation, attackBAnimation);
-
-        // 验证攻击判定窗口
-        if (attackWindow == null)
-        {
-            GameLogger.LogWarning("BossController: 未绑定AttackWindow组件！攻击将无法造成伤害。", "BossController");
-        }
-        else
-        {
-            // 设置攻击判定的伤害值
-            attackWindow.SetDamage(attackDamage);
-        }
-
-        // 初始化生命值
-        currentHealth = maxHealth;
+        Initialized();
 
         // 如果动作序列为空，添加默认序列
         if (actionSequence.Count == 0)
         {
-            GameLogger.LogWarning("BossController: 动作序列为空，添加默认序列。", "BossController");
-            actionSequence.Add(new BossAction { actionType = BossActionType.Attack1, duration = 1f });
+            GameLogger.LogWarning("BossController: TODO: 动作序列为空，添加默认序列。", "BossController");
+            actionSequence.Add(new BossAction { actionType = BossActionType.AttackX, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 1f });
-            actionSequence.Add(new BossAction { actionType = BossActionType.Attack2, duration = 1f });
+            actionSequence.Add(new BossAction { actionType = BossActionType.AttackY, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 1f });
-            actionSequence.Add(new BossAction { actionType = BossActionType.Attack3, duration = 1f });
+            actionSequence.Add(new BossAction { actionType = BossActionType.AttackB, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 2f });
         }
 
@@ -104,7 +107,7 @@ public class BossController : MonoBehaviour, IDamageable
     {
         if (!isPlaying) return;
 
-        // 如果正在执行动作，等待动作完成
+        // 等待当前动作完成
         if (isPerformingAction)
         {
             actionTimer -= Time.deltaTime;
@@ -118,10 +121,89 @@ public class BossController : MonoBehaviour, IDamageable
         }
     }
 
+    /// <summary> ----------------------------------------- Public ----------------------------------------- </summary>
+    /// <summary>
+    /// 添加新动作到序列末尾
+    /// </summary>
+    // public void AddAction(BossActionType actionType, float duration)
+    // {
+    //     actionSequence.Add(new BossAction { actionType = actionType, duration = duration });
+    // }
+
+    /// <summary>
+    /// 清空所有动作序列
+    /// </summary>
+    // public void ClearSequence()
+    // {
+    //     actionSequence.Clear();
+    // }
+
+    // ==================== 攻击判定窗口控制 ====================
+    /// <summary>
+    /// 开启攻击判定窗口（由Animation Event调用）
+    /// </summary>
+    public void OnAttackWindowStart()
+    {
+        GameLogger.LogAttackWindow("Boss OnAttackWindow Start");
+
+        // 根据当前动作类型设置攻击类型
+        if (actionSequence.Count > 0 && currentActionIndex < actionSequence.Count)
+        {
+            BossActionType currentAction = actionSequence[currentActionIndex].actionType;
+            AttackType attackType = currentAction switch
+            {
+                BossActionType.AttackX => AttackType.Attack1,
+                BossActionType.AttackY => AttackType.Attack2,
+                BossActionType.AttackB => AttackType.Attack3,
+                _ => AttackType.Attack1
+            };
+            attackWindow.SetAttackType(attackType);
+        }
+        
+        attackWindow.StartWindow();
+    }
+
+    /// <summary>
+    /// 关闭攻击判定窗口（由Animation Event调用）
+    /// </summary>
+    public void OnAttackWindowEnd()
+    {
+        GameLogger.LogAttackWindow("Boss OnAttackWindow End");
+        
+        attackWindow.EndWindow();
+    }
+
+    // ==================== 受伤系统 ====================
+    /// <summary>
+    /// 接收伤害
+    /// </summary>
+    public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+        GameLogger.LogDamageTaken("Boss", damage, currentHealth, maxHealth);
+
+        // 触发受伤效果（可以在这里添加受伤动画、音效等）
+        OnDamaged();
+
+        // 检查是否死亡
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
+    void Initialized()
+    {
+        attackWindow.SetDamage(attackDamage);    // 设置攻击判定的伤害值
+        currentHealth = maxHealth;  // 初始化生命值
+    }
+
+    // ==================== 动作序列控制 ====================
     /// <summary>
     /// 开始播放动作序列
     /// </summary>
-    public void StartSequence()
+    private void StartSequence()
     {
         if (actionSequence.Count == 0)
         {
@@ -137,7 +219,7 @@ public class BossController : MonoBehaviour, IDamageable
     /// <summary>
     /// 停止播放动作序列
     /// </summary>
-    public void StopSequence()
+    private void StopSequence()
     {
         isPlaying = false;
         isPerformingAction = false;
@@ -148,7 +230,7 @@ public class BossController : MonoBehaviour, IDamageable
     /// <summary>
     /// 暂停播放动作序列
     /// </summary>
-    public void PauseSequence()
+    private void PauseSequence()
     {
         isPlaying = false;
     }
@@ -156,7 +238,7 @@ public class BossController : MonoBehaviour, IDamageable
     /// <summary>
     /// 继续播放动作序列
     /// </summary>
-    public void ResumeSequence()
+    private void ResumeSequence()
     {
         isPlaying = true;
     }
@@ -164,14 +246,14 @@ public class BossController : MonoBehaviour, IDamageable
     /// <summary>
     /// 重置动作序列到开始
     /// </summary>
-    public void ResetSequence()
+    private void ResetSequence()
     {
         StopSequence();
         currentActionIndex = 0;
     }
 
     /// <summary>
-    /// 执行当前动作
+    /// 执行当前序列中的动作
     /// </summary>
     void ExecuteCurrentAction()
     {
@@ -188,7 +270,7 @@ public class BossController : MonoBehaviour, IDamageable
     }
 
     /// <summary>
-    /// 执行下一个动作
+    /// 移动到下一个动作，检查是否循环
     /// </summary>
     void ExecuteNextAction()
     {
@@ -217,7 +299,7 @@ public class BossController : MonoBehaviour, IDamageable
     }
 
     /// <summary>
-    /// 播放动作动画
+    /// 根据动作类型播放对应的动画
     /// </summary>
     void PlayActionAnimation(BossActionType actionType)
     {
@@ -226,9 +308,9 @@ public class BossController : MonoBehaviour, IDamageable
         AnimationClip clipToPlay = actionType switch
         {
             BossActionType.Idle => idleAnimation,
-            BossActionType.Attack1 => attackXAnimation,
-            BossActionType.Attack2 => attackYAnimation,
-            BossActionType.Attack3 => attackBAnimation,
+            BossActionType.AttackX => attackXAnimation,
+            BossActionType.AttackY => attackYAnimation,
+            BossActionType.AttackB => attackBAnimation,
             _ => idleAnimation
         };
 
@@ -250,91 +332,7 @@ public class BossController : MonoBehaviour, IDamageable
     }
 
     /// <summary>
-    /// 添加动作到序列
-    /// </summary>
-    public void AddAction(BossActionType actionType, float duration)
-    {
-        actionSequence.Add(new BossAction { actionType = actionType, duration = duration });
-    }
-
-    /// <summary>
-    /// 清空动作序列
-    /// </summary>
-    public void ClearSequence()
-    {
-        actionSequence.Clear();
-    }
-
-    // ==================== 攻击判定窗口控制 ====================
-    
-    /// <summary>
-    /// 开启攻击判定窗口（由Animation Event调用）
-    /// 在攻击动画的合适帧添加此Event
-    /// </summary>
-    public void OnAttackHitboxStart()
-    {
-        GameLogger.LogAnimationEvent("Boss", "OnAttackHitboxStart");
-        
-        if (attackWindow != null)
-        {
-            // 根据当前动作类型设置攻击类型
-            if (actionSequence.Count > 0 && currentActionIndex < actionSequence.Count)
-            {
-                BossActionType currentAction = actionSequence[currentActionIndex].actionType;
-                AttackType attackType = currentAction switch
-                {
-                    BossActionType.Attack1 => AttackType.Attack1,
-                    BossActionType.Attack2 => AttackType.Attack2,
-                    BossActionType.Attack3 => AttackType.Attack3,
-                    _ => AttackType.Attack1
-                };
-                attackWindow.SetAttackType(attackType);
-            }
-            
-            attackWindow.StartWindow();
-        }
-        else
-        {
-            GameLogger.LogWarning("BossController: AttackWindow未绑定，无法启用攻击判定！", "BossController");
-        }
-    }
-
-    /// <summary>
-    /// 关闭攻击判定窗口（由Animation Event调用）
-    /// 在攻击动画结束前的合适帧添加此Event
-    /// </summary>
-    public void OnAttackHitboxEnd()
-    {
-        GameLogger.LogAnimationEvent("Boss", "OnAttackHitboxEnd");
-        
-        if (attackWindow != null)
-        {
-            attackWindow.EndWindow();
-        }
-    }
-
-    // ==================== 受伤系统 ====================
-    
-    /// <summary>
-    /// 接收伤害（实现IDamageable接口）
-    /// </summary>
-    public void TakeDamage(float damage)
-    {
-        currentHealth -= damage;
-        GameLogger.LogDamageTaken("Boss", damage, currentHealth, maxHealth);
-
-        // 触发受伤效果（可以在这里添加受伤动画、音效等）
-        OnDamaged();
-
-        // 检查是否死亡
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-    }
-
-    /// <summary>
-    /// 受伤时的响应
+    /// 受伤时的响应处理
     /// </summary>
     void OnDamaged()
     {
@@ -342,7 +340,6 @@ public class BossController : MonoBehaviour, IDamageable
         // - 播放受伤动画
         // - 播放受伤音效
         // - 显示受伤特效
-        // - 进入下一阶段（如果Boss有多阶段）
     }
 
     /// <summary>
@@ -352,7 +349,7 @@ public class BossController : MonoBehaviour, IDamageable
     {
         GameLogger.LogDeath("Boss");
         
-        // 停止动作序列
+        // 停止所有动作序列
         StopSequence();
         
         // 可以在这里添加：
@@ -362,33 +359,34 @@ public class BossController : MonoBehaviour, IDamageable
         // - 掉落奖励
         // - 触发下一阶段或结束战斗
         
-        // 暂时禁用脚本
+        // 禁用脚本
         enabled = false;
     }
 
     /// <summary>
     /// 恢复生命值
     /// </summary>
-    public void Heal(float amount)
-    {
-        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        GameLogger.LogHeal("Boss", amount, currentHealth, maxHealth);
-    }
+    // public void Heal(float amount)
+    // {
+    //     currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+    //     GameLogger.LogHeal("Boss", amount, currentHealth, maxHealth);
+    // }
 }
 
+/// <summary> ----------------------------------------- 数据类型 ----------------------------------------- </summary>
 /// <summary>
-/// Boss动作类型
+/// Boss动作类型枚举
 /// </summary>
 public enum BossActionType
 {
     Idle,       // 待机
-    Attack1,    // 攻击1
-    Attack2,    // 攻击2
-    Attack3     // 攻击3
+    AttackX,    // 攻击X
+    AttackY,    // 攻击Y
+    AttackB     // 攻击B
 }
 
 /// <summary>
-/// Boss动作数据
+/// Boss动作数据结构
 /// </summary>
 [System.Serializable]
 public class BossAction

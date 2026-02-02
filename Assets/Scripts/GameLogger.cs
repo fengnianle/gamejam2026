@@ -57,8 +57,8 @@ public class GameLogger : MonoBehaviour
     public bool enableLogging = true;
 
     [Header("=== 战斗系统日志 ===")]
-    [Tooltip("攻击判定相关日志（攻击判定窗口开启/关闭、碰撞检测等）")]
-    public bool logAttackHitbox = true;
+    [Tooltip("攻击窗口相关日志（攻击判定窗口开启/关闭、反击判定等）")]
+    public bool logAttackWindow = true;
     
     [Tooltip("伤害系统相关日志（造成伤害、受到伤害、生命值变化等）")]
     public bool logDamage = true;
@@ -97,16 +97,16 @@ public class GameLogger : MonoBehaviour
 
     #region 日志输出方法
 
-    // ==================== 攻击判定日志 ====================
+    // ==================== 攻击窗口日志 ====================
     
     /// <summary>
-    /// 攻击判定相关日志
+    /// 攻击窗口相关日志
     /// </summary>
-    public static void LogAttackHitbox(string message)
+    public static void LogAttackWindow(string message)
     {
-        if (Instance.enableLogging && Instance.logAttackHitbox)
+        if (Instance.enableLogging && Instance.logAttackWindow)
         {
-            Debug.Log($"<color=orange>[AttackHitbox]</color> {message}");
+            Debug.Log($"<color=orange>[AttackWindow]</color> {message}");
         }
     }
 
@@ -272,7 +272,7 @@ public class GameLogger : MonoBehaviour
     public void EnableAllLogs()
     {
         enableLogging = true;
-        logAttackHitbox = true;
+        logAttackWindow = true;
         logDamage = true;
         logDeath = true;
         logAnimation = true;
@@ -302,7 +302,7 @@ public class GameLogger : MonoBehaviour
     public void EnableErrorAndWarningOnly()
     {
         enableLogging = true;
-        logAttackHitbox = false;
+        logAttackWindow = false;
         logDamage = false;
         logDeath = false;
         logAnimation = false;
@@ -323,7 +323,7 @@ public class GameLogger : MonoBehaviour
     public void EnableCombatLogsOnly()
     {
         enableLogging = true;
-        logAttackHitbox = true;
+        logAttackWindow = true;
         logDamage = true;
         logDeath = true;
         logAnimation = false;

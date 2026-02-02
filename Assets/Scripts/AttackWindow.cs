@@ -18,8 +18,8 @@ public class AttackWindow : MonoBehaviour
     [Tooltip("攻击伤害值")]
     public float damage = 10f;
     
-    [Tooltip("目标对象的标签")]
-    public string targetTag = "Player";
+    [Tooltip("目标对象（Player对象，通过拖拽赋值）")]
+    public GameObject targetObject;
 
     [Header("窗口状态")]
     [Tooltip("当前是否在判定窗口内")]
@@ -48,7 +48,6 @@ public class AttackWindow : MonoBehaviour
     [Tooltip("是否显示调试信息")]
     public bool showDebugInfo = true;
 
-    private GameObject targetObject;
     private bool hasBeenCountered = false; // 是否已被反制
 
     void Update()
@@ -76,18 +75,8 @@ public class AttackWindow : MonoBehaviour
         isWindowActive = true;
         windowStartTime = Time.time;
         hasBeenCountered = false;
-        
-        // 查找目标对象
-        if (targetObject == null)
-        {
-            GameObject target = GameObject.FindGameObjectWithTag(targetTag);
-            if (target != null)
-            {
-                targetObject = target;
-            }
-        }
 
-        GameLogger.LogAttackHitbox($"{gameObject.name}: 攻击窗口已开启 - 攻击类型: {attackType}");
+        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已开启 - 攻击类型: {attackType}");
         onWindowStart?.Invoke();
         
         // 通知反制系统
@@ -104,7 +93,7 @@ public class AttackWindow : MonoBehaviour
         windowDuration = Time.time - windowStartTime;
         isWindowActive = false;
         
-        GameLogger.LogAttackHitbox($"{gameObject.name}: 攻击窗口已关闭 - 持续时间: {windowDuration:F2}秒");
+        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已关闭 - 持续时间: {windowDuration:F2}秒");
         onWindowEnd?.Invoke();
     }
 
@@ -146,13 +135,14 @@ public class AttackWindow : MonoBehaviour
     {
         if (targetObject == null) return;
 
-        var damageable = targetObject.GetComponent<IDamageable>();
-        if (damageable != null)
-        {
-            damageable.TakeDamage(damage);
-            GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
-            onAttackHit?.Invoke(targetObject);
-        }
+GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+        // var damageable = targetObject.GetComponent<IDamageable>();
+        // if (damageable != null)
+        // {
+        //     damageable.TakeDamage(damage);
+        //     GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+        //     onAttackHit?.Invoke(targetObject);
+        // }
     }
 
     /// <summary>

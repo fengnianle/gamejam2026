@@ -8,7 +8,7 @@
 5. [CounterInputDetector 反击输入检测说明](#counterinputdetector-反击输入检测说明)
 6. [Animation Event 设置说明](#animation-event-设置说明)
 7. [GameLogger 日志系统说明](#gamelogger-日志系统说明)
-8. [旧版碰撞系统说明](#旧版碰撞系统说明)
+8. [快速开始检查清单](#快速开始检查清单)
 
 ---
 
@@ -208,7 +208,7 @@ BossController会根据当前执行的动作自动设置AttackWindow的攻击类
 
 1. **窗口开启**
    - Boss播放攻击动画
-   - Animation Event触发BossController的 `OnAttackHitboxStart()`
+   - Animation Event触发BossController的 `OnAttackWindowStart()`
    - BossController调用AttackWindow的 `StartWindow()`
    - AttackWindow通知CounterInputDetector
 
@@ -317,31 +317,31 @@ Animation Event 是Unity动画系统中的功能，可以在动画播放到特�
 - 在Animation窗口的时间轴上，找到Boss攻击的关键时刻（例如：武器即将接触玩家的瞬间）
 - 点击时间轴上方的 `Add Event` 按钮（或右键点击时间轴选择 "Add Animation Event"）
 - 在弹出的Event窗口中：
-  - **Function**: 填写 `OnAttackHitboxStart`
+  - **Function**: 填写 `OnAttackWindowStart`
   - 点击 "Apply" 保存
 
 **Event 2: 结束攻击判定窗口**
 - 在时间轴上找到攻击判定应该结束的帧（通常在攻击动作完成后）
 - 添加新的Event
 - 在Event窗口中：
-  - **Function**: 填写 `OnAttackHitboxEnd`
+  - **Function**: 填写 `OnAttackWindowEnd`
   - 点击 "Apply" 保存
 
 ##### 为 Attack2 和 Attack3 动画重复相同步骤
 - 每个Boss攻击动画都需要添加两个Event：
-  - `OnAttackHitboxStart` - 开始攻击判定窗口
-  - `OnAttackHitboxEnd` - 结束攻击判定窗口
+  - `OnAttackWindowStart` - 开始攻击判定窗口
+  - `OnAttackWindowEnd` - 结束攻击判定窗口
 
 #### 4. 调整Event时机（重要！）
 
-**OnAttackHitboxStart的时机选择：**
+**OnAttackWindowStart的时机选择：**
 - 应该在攻击即将命中玩家的瞬间
 - 给玩家一个短暂的反应时间窗口
 - 太早：玩家会觉得判定不公平
 - 太晚：玩家来不及反应
 
-**OnAttackHitboxEnd的时机选择：**
-- 通常在 `OnAttackHitboxStart` 之后 0.3-0.5秒
+**OnAttackWindowEnd的时机选择：**
+- 通常在 `OnAttackWindowStart` 之后 0.3-0.5秒
 - 配合AttackWindow的 `windowDuration` 设置
 - 确保窗口有合理的持续时间
 
@@ -356,26 +356,26 @@ Animation Event 是Unity动画系统中的功能，可以在动画播放到特�
 
 | Event函数名 | 触发时机 | 作用 |
 |------------|---------|------|
-| `OnAttackHitboxStart` | 攻击判定窗口开始 | 开启AttackWindow，通知玩家准备反击 |
-| `OnAttackHitboxEnd` | 攻击判定窗口结束 | 关闭AttackWindow，结算伤害 |
+| `OnAttackWindowStart` | 攻击判定窗口开始 | 开启AttackWindow，通知玩家准备反击 |
+| `OnAttackWindowEnd` | 攻击判定窗口结束 | 关闭AttackWindow，结算伤害 |
 
 ### 示例时间点设置参考
 
 假设Boss攻击动画总长度为1秒（60帧@60fps）：
 
 **重击 (Attack1)**
-- `OnAttackHitboxStart`: 第30帧 (0.5秒) - Boss抬手即将下砸
-- `OnAttackHitboxEnd`: 第45帧 (0.75秒) - 攻击结束
+- `OnAttackWindowStart`: 第30帧 (0.5秒) - Boss抬手即将下砸
+- `OnAttackWindowEnd`: 第45帧 (0.75秒) - 攻击结束
 - 窗口时长：0.25秒
 
 **突刺 (Attack2)**
-- `OnAttackHitboxStart`: 第20帧 (0.33秒) - 开始冲刺
-- `OnAttackHitboxEnd`: 第38帧 (0.63秒) - 冲刺结束
+- `OnAttackWindowStart`: 第20帧 (0.33秒) - 开始冲刺
+- `OnAttackWindowEnd`: 第38帧 (0.63秒) - 冲刺结束
 - 窗口时长：0.3秒
 
 **横扫 (Attack3)**
-- `OnAttackHitboxStart`: 第25帧 (0.42秒) - 开始横扫
-- `OnAttackHitboxEnd`: 第43帧 (0.72秒) - 横扫结束
+- `OnAttackWindowStart`: 第25帧 (0.42秒) - 开始横扫
+- `OnAttackWindowEnd`: 第43帧 (0.72秒) - 横扫结束
 - 窗口时长：0.3秒
 
 *注意：具体时间点需要根据你的实际动画进行调整，以达到最佳游戏体验*
@@ -442,7 +442,7 @@ GameLogger.LogDeath("Boss");
 
 // 动画日志
 GameLogger.LogAnimation("Player", "Attack1");
-GameLogger.LogAnimationEvent("Boss", "OnAttackHitboxStart");
+GameLogger.LogAnimationEvent("Boss", "OnAttackWindowStart");
 
 // 角色行为日志
 GameLogger.LogPlayerAction("按下Q键，尝试反击Attack1");
@@ -509,71 +509,6 @@ GameLogger.Instance.EnableCombatLogsOnly();
 2. **自动创建**: 如果场景中没有GameLogger对象，系统会自动创建一个（使用默认配置）。建议手动创建以便自定义配置。
 
 3. **场景持久化**: GameLogger对象会在场景切换时保持存在（DontDestroyOnLoad），因此只需要在第一个场景中创建一次。
-
----
-
-## 旧版碰撞系统说明
-
-### ⚠️ 重要提示
-以下内容为旧版碰撞检测系统的说明，**新系统已不再使用碰撞检测**。保留此部分仅供参考。
-
-### AttackHitbox.cs (已弃用)
-
-#### 组件说明
-`AttackHitbox` 是旧版攻击判定区域组件，使用Unity的碰撞检测系统。**此组件已被 `AttackWindow` 替代。**
-
-#### 为什么弃用？
-- ❌ 需要配置复杂的Collider2D和Layer系统
-- ❌ 判定依赖物理碰撞，精度不够高
-- ❌ 无法实现反击机制
-- ❌ 玩家只能被动承受伤害
-- ✅ 新系统使用时间窗口，更精确、更灵活
-
-#### 如果你仍在使用旧系统
-
-如果你的项目中还在使用 `AttackHitbox.cs`，以下是设置说明：
-
-1. **创建Hitbox对象**
-   - 在角色对象（Player或Boss）下创建子对象
-   - 命名为 "AttackHitbox"
-
-2. **添加碰撞体组件**
-   - 添加 `BoxCollider2D` 或 `CircleCollider2D` 组件
-   - 必须勾选 `Is Trigger` 选项
-   - 调整碰撞体的大小和位置
-
-3. **添加AttackHitbox脚本**
-   - 将 `AttackHitbox.cs` 脚本挂载到该对象上
-
-4. **配置Collider2D（必需）**
-   - Player和Boss对象必须有Collider2D组件
-   - 不要勾选 "Is Trigger"
-   - 调整碰撞体大小以匹配角色身体范围
-
-5. **配置Layer系统**
-   - 设置自定义Layer（Player, Enemy, PlayerAttack, EnemyAttack）
-   - 配置Physics 2D碰撞矩阵
-
-#### 迁移到新系统
-
-如果你想从旧系统迁移到新系统：
-
-1. **移除旧组件**
-   - 从Player和Boss对象上移除不需要的Collider2D组件
-   - 删除或禁用AttackHitbox子对象
-
-2. **添加新组件**
-   - 在Boss对象下创建AttackWindow子对象
-   - 添加 `AttackWindow.cs` 脚本
-   - PlayerController会自动添加 `CounterInputDetector`
-
-3. **更新动画Event**
-   - Animation Event仍然使用 `OnAttackHitboxStart` 和 `OnAttackHitboxEnd`
-   - 但现在它们会调用AttackWindow的方法而非AttackHitbox
-
-4. **测试新系统**
-   - 运行游戏，测试反击机制
-   - 调整窗口时长和无敌时间以达到最佳体验
 
 ---
 

@@ -47,6 +47,19 @@ public static class ComponentValidator
     }
 
     /// <summary>
+    /// 验证必需组件是否存在（泛型版本）
+    /// </summary>
+    public static bool ValidateRequiredComponent<T>(T component, string componentName, string controllerName) where T : Component
+    {
+        if (component == null)
+        {
+            GameLogger.LogComponentValidation($"{controllerName}: 未找到 {componentName} 组件！请确保已添加该组件。", LogType.Error);
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// 检查动画片段并记录警告
     /// </summary>
     public static bool ValidateAndLogClip(AnimationClip clip, string clipName, string controllerName)
