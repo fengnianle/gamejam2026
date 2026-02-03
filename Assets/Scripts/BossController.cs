@@ -24,19 +24,28 @@ public class BossController : MonoBehaviour
     
     [Tooltip("攻击B动画片段")]
     public AnimationClip attackBAnimation;
+    
+    [Tooltip("死亡动画片段")]
+    public AnimationClip deathAnimation;
 
     /// <summary>
-    /// 定力值系统
+    /// 角色配置
     /// </summary>
-    [Header("定力值系统")]
-    [Tooltip("最大定力值")]
-    public float maxHealth = 200f;
+    [Header("角色配置")]
+    [Tooltip("角色属性配置（ScriptableObject）")]
+    public CharacterStats characterStats;
     
-    [Tooltip("当前定力值")]
-    public float currentHealth = 200f;
- 
-    [Tooltip("攻击力")]
-    public float attackDamage = 30f;
+    /// <summary>
+    /// 运行时状态（不可序列化，不会保存到场景）
+    /// </summary>
+    [Header("运行时状态")]
+    [Tooltip("当前生命值（运行时动态计算，不保存）")]
+    [System.NonSerialized]
+    public float currentHealth;
+    
+    [Header("场景对象引用")]
+    [Tooltip("Boss血条UI（请在Inspector中拖拽赋值）")]
+    public HPBar hpBar;
 
     /// <summary>
     /// 动作序列系统
@@ -76,12 +85,35 @@ public class BossController : MonoBehaviour
     private float actionTimer = 0f;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
-    void Start()
+    void Awake()
     {
-        // 获取Animator组件
+        // 获取组件引用（在Awake中确保最早获取）
         animator = GetComponent<Animator>();
         attackWindow = GetComponent<AttackWindow>();
+        
+        // 验证关键组件
+        if (animator == null)
+        {
+            GameLogger.LogError("[Awake] Animator组件获取失败！请确保GameObject上挂载了Animator组件", "Boss");
+        }
+        else
+        {
+            GameLogger.Log("[Awake] Animator组件获取成功", "Boss");
+        }
+    }
 
+    void Start()
+    {
+        // 验证拖拽赋值的组件
+        if (hpBar == null)
+        {
+            GameLogger.LogWarning("[Start] hpBar未赋值，请在Inspector中拖拽赋值", "Boss");
+        }
+        else
+        {
+            GameLogger.Log($"[Start] hpBar已赋值: {hpBar.gameObject.name}", "Boss");
+        }
+        
         Initialized();
 
         // 如果动作序列为空，添加默认序列
@@ -152,10 +184,10 @@ public class BossController : MonoBehaviour
             BossActionType currentAction = actionSequence[currentActionIndex].actionType;
             AttackType attackType = currentAction switch
             {
-                BossActionType.AttackX => AttackType.Attack1,
-                BossActionType.AttackY => AttackType.Attack2,
-                BossActionType.AttackB => AttackType.Attack3,
-                _ => AttackType.Attack1
+                BossActionType.AttackX => AttackType.AttackX,
+                BossActionType.AttackY => AttackType.AttackY,
+                BossActionType.AttackB => AttackType.AttackB,
+                _ => AttackType.AttackX
             };
             attackWindow.SetAttackType(attackType);
         }
@@ -180,7 +212,15 @@ public class BossController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        GameLogger.LogDamageTaken("Boss", damage, currentHealth, maxHealth);
+        currentHealth = Mathf.Max(0, currentHealth); // 确保不会小于0
+        
+        GameLogger.LogDamageTaken("Boss", damage, currentHealth, characterStats.maxHealth);
+
+        // 更新血条显示
+        if (hpBar != null)
+        {
+            hpBar.UpdateHP(currentHealth, characterStats.maxHealth);
+        }
 
         // 触发受伤效果（可以在这里添加受伤动画、音效等）
         OnDamaged();
@@ -192,11 +232,37 @@ public class BossController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 玩家死亡时调用（停止Boss的攻击序列）
+    /// </summary>
+    public void OnPlayerDeath()
+    {
+        GameLogger.LogBossAction("玩家已死亡，停止攻击序列");
+        StopSequence();
+        
+        // 播放胜利动画或待机动画
+        PlayIdleAnimation();
+    }
+
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
     void Initialized()
     {
-        attackWindow.SetDamage(attackDamage);    // 设置攻击判定的伤害值
-        currentHealth = maxHealth;  // 初始化生命值
+        // 验证配置
+        if (characterStats == null)
+        {
+            GameLogger.LogError("CharacterStats未赋值！请在Inspector中拖拽赋值", "BossController");
+            return;
+        }
+        
+        // 从配置中读取初始值
+        currentHealth = characterStats.maxHealth;  // 初始化生命值
+        attackWindow.SetDamage(characterStats.attackDamage);    // 设置攻击判定的伤害值
+        
+        // 初始化血条显示
+        if (hpBar != null)
+        {
+            hpBar.SetHP(currentHealth, characterStats.maxHealth);
+        }
     }
 
     // ==================== 动作序列控制 ====================
@@ -352,12 +418,17 @@ public class BossController : MonoBehaviour
         // 停止所有动作序列
         StopSequence();
         
+        // 播放死亡动画
+        if (ComponentValidator.CanPlayAnimation(animator, deathAnimation))
+        {
+            animator.Play(deathAnimation.name);
+        }
+        
         // 可以在这里添加：
-        // - 播放死亡动画
-        // - 禁用控制
         // - 显示胜利界面
         // - 掉落奖励
         // - 触发下一阶段或结束战斗
+        // - 播放胜利音效
         
         // 禁用脚本
         enabled = false;
@@ -371,6 +442,18 @@ public class BossController : MonoBehaviour
     //     currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
     //     GameLogger.LogHeal("Boss", amount, currentHealth, maxHealth);
     // }
+    
+    /// <summary>
+    /// Unity编辑器验证方法（确保退出Play模式后状态重置）
+    /// </summary>
+    void OnValidate()
+    {
+        // 确保在编辑器模式下（非运行时）脚本是启用的
+        if (!Application.isPlaying && !enabled)
+        {
+            enabled = true;
+        }
+    }
 }
 
 /// <summary> ----------------------------------------- 数据类型 ----------------------------------------- </summary>

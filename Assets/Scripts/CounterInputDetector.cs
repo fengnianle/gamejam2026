@@ -15,13 +15,13 @@ public class CounterInputDetector : MonoBehaviour
     public float invincibilityTime = 0.5f;
 
     [Header("按键映射")]
-    [Tooltip("反制攻击1的按键")]
+    [Tooltip("反制攻击X的按键")]
     public KeyCode counterAttack1Key = KeyCode.Q;
     
-    [Tooltip("反制攻击2的按键")]
+    [Tooltip("反制攻击Y的按键")]
     public KeyCode counterAttack2Key = KeyCode.W;
     
-    [Tooltip("反制攻击3的按键")]
+    [Tooltip("反制攻击B的按键")]
     public KeyCode counterAttack3Key = KeyCode.E;
 
     [Header("状态")]
@@ -41,7 +41,7 @@ public class CounterInputDetector : MonoBehaviour
         if (isInvincible && Time.time >= invincibilityEndTime)
         {
             isInvincible = false;
-            GameLogger.Log("Player无敌时间结束", "Counter");
+            GameLogger.LogInvincibility("Player无敌时间结束");
         }
 
         // 如果正在等待输入，检测按键
@@ -60,7 +60,7 @@ public class CounterInputDetector : MonoBehaviour
         expectedAttackType = attackType;
         isWaitingForInput = true;
 
-        GameLogger.Log($"敌人发起攻击: {attackType}，等待玩家反制输入...", "Counter");
+        GameLogger.LogCounterWindowStart(attackType);
 
         // 显示反制提示UI
         ShowCounterPrompt(attackType);
@@ -79,19 +79,19 @@ public class CounterInputDetector : MonoBehaviour
         {
             pressedKey = counterAttack1Key;
             actionName = "Q键反制";
-            TryCounter(AttackType.Attack1, actionName);
+            TryCounter(AttackType.AttackX, actionName);
         }
         else if (Input.GetKeyDown(counterAttack2Key))
         {
             pressedKey = counterAttack2Key;
             actionName = "W键反制";
-            TryCounter(AttackType.Attack2, actionName);
+            TryCounter(AttackType.AttackY, actionName);
         }
         else if (Input.GetKeyDown(counterAttack3Key))
         {
             pressedKey = counterAttack3Key;
             actionName = "E键反制";
-            TryCounter(AttackType.Attack3, actionName);
+            TryCounter(AttackType.AttackB, actionName);
         }
     }
 
@@ -102,7 +102,7 @@ public class CounterInputDetector : MonoBehaviour
     {
         if (currentAttackWindow == null || !currentAttackWindow.IsWindowActive())
         {
-            GameLogger.LogWarning("反制失败：不在攻击窗口内", "Counter");
+            GameLogger.LogCounterFail("不在攻击窗口内");
             OnCounterFail();
             return;
         }
@@ -116,7 +116,7 @@ public class CounterInputDetector : MonoBehaviour
         else
         {
             // 按错了键
-            GameLogger.LogWarning($"反制失败：按键错误（期望: {expectedAttackType}, 实际: {playerInput}）", "Counter");
+            GameLogger.LogCounterFail($"按键错误（期望: {expectedAttackType}, 实际: {playerInput}）");
             OnCounterFail();
         }
     }
@@ -126,7 +126,7 @@ public class CounterInputDetector : MonoBehaviour
     /// </summary>
     void OnCounterSuccess(string actionName)
     {
-        GameLogger.Log($"🎯 完美反制！使用 {actionName}", "Counter");
+        GameLogger.LogCounterSuccess(actionName, expectedAttackType);
 
         // 通知攻击窗口反制成功
         if (currentAttackWindow != null)
@@ -137,6 +137,7 @@ public class CounterInputDetector : MonoBehaviour
         // 进入无敌状态
         isInvincible = true;
         invincibilityEndTime = Time.time + invincibilityTime;
+        GameLogger.LogInvincibility($"Player进入无敌状态，持续 {invincibilityTime} 秒");
 
         // 可以在这里添加：
         // - 播放反制成功动画
@@ -171,7 +172,7 @@ public class CounterInputDetector : MonoBehaviour
     {
         isWaitingForInput = false;
         currentAttackWindow = null;
-        expectedAttackType = AttackType.Attack1;
+        expectedAttackType = AttackType.AttackX;
     }
 
     /// <summary>

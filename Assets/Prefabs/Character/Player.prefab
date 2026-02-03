@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 898465242456505133}
   - component: {fileID: 3867923995886706495}
   - component: {fileID: 5146387618394853163}
-  - component: {fileID: 6399781107992045138}
   - component: {fileID: 5456741115189411642}
+  - component: {fileID: 6399781107992045138}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -125,10 +125,41 @@ MonoBehaviour:
   attackXAnimation: {fileID: 7400000, guid: b5b5662ccc1c0524f91fa13e1ca56488, type: 2}
   attackYAnimation: {fileID: 7400000, guid: 03d635ca360179a4caef5793211a1631, type: 2}
   attackBAnimation: {fileID: 7400000, guid: cc48c8d64d7c8ac41b91ac183bdc67e2, type: 2}
-  attackWindow: {fileID: 5456741115189411642}
-  attackDamage: 10
-  maxHealth: 100
-  currentHealth: 100
+  deathAnimation: {fileID: 7400000, guid: 1e9292f2bf27df3459101656cc6ae005, type: 2}
+  characterStats: {fileID: 11400000, guid: 51f838c321322074281a04f3e957310a, type: 2}
+  hpBar: {fileID: 0}
+  bossController: {fileID: 0}
+--- !u!114 &5456741115189411642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311362291278671568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a502ed0d74103e34b88ae817aae619d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 0
+  damage: 50
+  isWindowActive: 0
+  windowStartTime: 0
+  windowDuration: 0
+  onWindowStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onWindowEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  onCounterSuccess:
+    m_PersistentCalls:
+      m_Calls: []
+  onAttackHit:
+    m_PersistentCalls:
+      m_Calls: []
+  targetObject: {fileID: 0}
+  showDebugInfo: 1
 --- !u!114 &6399781107992045138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,37 +179,6 @@ MonoBehaviour:
   counterAttack3Key: 101
   currentAttackWindow: {fileID: 0}
   expectedAttackType: 0
-  isWaitingForInput: 0
+  isWaitingForInput: 1
   isInvincible: 0
   counterPromptUI: {fileID: 0}
---- !u!114 &5456741115189411642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1311362291278671568}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a502ed0d74103e34b88ae817aae619d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackType: 0
-  damage: 10
-  targetObject: {fileID: 0}
-  isWindowActive: 0
-  windowStartTime: 0
-  windowDuration: 0
-  onWindowStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onWindowEnd:
-    m_PersistentCalls:
-      m_Calls: []
-  onCounterSuccess:
-    m_PersistentCalls:
-      m_Calls: []
-  onAttackHit:
-    m_PersistentCalls:
-      m_Calls: []
-  showDebugInfo: 1

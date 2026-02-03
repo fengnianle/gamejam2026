@@ -43,6 +43,9 @@ public static class ComponentValidator
     /// </summary>
     public static bool CanPlayAnimation(Animator animator, AnimationClip clip)
     {
+        string animatorStatus = animator != null ? $"存在 (GameObject: {animator.gameObject.name})" : "null";
+        string clipStatus = clip != null ? $"存在 (Name: {clip.name})" : "null";
+        GameLogger.LogComponentValidation($"ComponentValidator.CanPlayAnimation - Animator: {animatorStatus}, Clip: {clipStatus}", LogType.Warning);
         return animator != null && clip != null;
     }
 

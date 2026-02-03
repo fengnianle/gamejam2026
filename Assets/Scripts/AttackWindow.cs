@@ -13,13 +13,11 @@ public class AttackWindow : MonoBehaviour
 {
     [Header("攻击窗口设置")]
     [Tooltip("攻击类型标识（用于判断玩家需要按什么键反制）")]
-    public AttackType attackType = AttackType.Attack1;
+    public AttackType attackType = AttackType.AttackX;
     
     [Tooltip("攻击伤害值")]
-    public float damage = 10f;
-    
-    [Tooltip("目标对象（Player对象，通过拖拽赋值）")]
-    public GameObject targetObject;
+    public float damage = 50f;
+
 
     [Header("窗口状态")]
     [Tooltip("当前是否在判定窗口内")]
@@ -43,6 +41,10 @@ public class AttackWindow : MonoBehaviour
     
     [Tooltip("玩家未反制，攻击命中时触发")]
     public UnityEvent<GameObject> onAttackHit;
+
+    [Header("场景对象引用")]
+    [Tooltip("目标对象（Player对象，通过拖拽赋值）")]
+    public GameObject targetObject;
 
     [Header("调试选项")]
     [Tooltip("是否显示调试信息")]
@@ -135,14 +137,26 @@ public class AttackWindow : MonoBehaviour
     {
         if (targetObject == null) return;
 
-GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
-        // var damageable = targetObject.GetComponent<IDamageable>();
-        // if (damageable != null)
-        // {
-        //     damageable.TakeDamage(damage);
-        //     GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
-        //     onAttackHit?.Invoke(targetObject);
-        // }
+        // 尝试获取PlayerController或BossController来造成伤害
+        var playerController = targetObject.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.TakeDamage(damage);
+            GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+            onAttackHit?.Invoke(targetObject);
+            return;
+        }
+
+        var bossController = targetObject.GetComponent<BossController>();
+        if (bossController != null)
+        {
+            bossController.TakeDamage(damage);
+            GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+            onAttackHit?.Invoke(targetObject);
+            return;
+        }
+
+        GameLogger.LogWarning($"AttackWindow: 目标对象 {targetObject.name} 没有可接收伤害的组件！", "AttackWindow");
     }
 
     /// <summary>
@@ -196,7 +210,7 @@ GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
 /// </summary>
 public enum AttackType
 {
-    Attack1,    // 攻击1 - 对应Q键反制
-    Attack2,    // 攻击2 - 对应W键反制
-    Attack3     // 攻击3 - 对应E键反制
+    AttackX,    // 攻击X - 对应Q键反制
+    AttackY,    // 攻击Y - 对应W键反制
+    AttackB     // 攻击B - 对应E键反制
 }

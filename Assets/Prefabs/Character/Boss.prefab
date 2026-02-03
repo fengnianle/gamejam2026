@@ -124,10 +124,9 @@ MonoBehaviour:
   attackXAnimation: {fileID: 7400000, guid: 5b7a8007b9c97fc449c27f0fce44e124, type: 2}
   attackYAnimation: {fileID: 7400000, guid: 314e97eb367bdeb4ab5054b74abb68ec, type: 2}
   attackBAnimation: {fileID: 7400000, guid: a3e0912025f8cee4997d6c6fad942570, type: 2}
-  attackWindow: {fileID: 0}
-  attackDamage: 15
-  maxHealth: 200
-  currentHealth: 200
+  deathAnimation: {fileID: 7400000, guid: 969ae23d16a51214e8791252fd05a0a1, type: 2}
+  characterStats: {fileID: 11400000, guid: bc037b9e8b1c6be40a2cb2ccd3ba2b41, type: 2}
+  hpBar: {fileID: 0}
   actionSequence: []
   loopSequence: 1
   autoStart: 1
@@ -145,8 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 0
-  damage: 30
-  targetObject: {fileID: 8957818055454923021, guid: 8d2bc0d856b9e31478fe55b4439ea57e, type: 3}
+  damage: 50
   isWindowActive: 0
   windowStartTime: 0
   windowDuration: 0
@@ -162,4 +160,5 @@ MonoBehaviour:
   onAttackHit:
     m_PersistentCalls:
       m_Calls: []
+  targetObject: {fileID: 0}
   showDebugInfo: 1

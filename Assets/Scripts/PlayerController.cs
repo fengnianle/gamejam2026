@@ -25,18 +25,29 @@ public class PlayerController : MonoBehaviour
     [Tooltip("攻击B动画片段（E键触发）")]
     public AnimationClip attackBAnimation;
     
-    /// <summary>
-    /// 定力值伤害
-    /// </summary>
-    [Header("定力值系统")]
-    [Tooltip("最大定力值")]
-    public float maxHealth = 100f;
+    [Tooltip("死亡动画片段")]
+    public AnimationClip deathAnimation;
     
-    [Tooltip("当前定力值")]
-    public float currentHealth = 100f;
-
-    [Tooltip("攻击力")]
-    public float attackDamage = 10f;
+    /// <summary>
+    /// 角色配置
+    /// </summary>
+    [Header("角色配置")]
+    [Tooltip("角色属性配置（ScriptableObject）")]
+    public CharacterStats characterStats;
+    
+    /// <summary>
+    /// 运行时状态（不可序列化，不会保存到场景）
+    /// </summary>
+    [Header("运行时状态")]
+    [Tooltip("当前生命值（运行时动态计算，不保存）")]
+    private float currentHealth;
+    
+    [Header("场景对象引用")]
+    [Tooltip("玩家血条UI（请在Inspector中拖拽赋值）")]
+    public HPBar hpBar;
+    
+    [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
+    public BossController bossController;
     
     /// <summary>
     /// 组件获取
@@ -56,15 +67,24 @@ public class PlayerController : MonoBehaviour
     private bool isAttacking = false;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
-    void Start()
+    void Awake()
     {
-        // 获取组件引用
+        // 在Awake中获取组件，确保最早获取
         animator = GetComponent<Animator>();
         attackWindow = GetComponent<AttackWindow>();
         counterDetector = GetComponent<CounterInputDetector>();
-
-        Initialized();
         
+        GameLogger.Log($"[Awake] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}", "PlayerController");
+        GameLogger.Log($"[Awake] animator: {(animator != null ? "OK" : "NULL")}, attackWindow: {(attackWindow != null ? "OK" : "NULL")}, counterDetector: {(counterDetector != null ? "OK" : "NULL")}", "PlayerController");
+    }
+
+    void Start()
+    {
+        GameLogger.Log($"[Start] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}", "PlayerController");
+        GameLogger.Log($"[Start] bossController: {(bossController != null ? bossController.gameObject.name : "NULL")}", "PlayerController");
+        
+        Initialized();
+
         PlayIdleAnimation();    // 初始播放Idle动画
     }
 
@@ -110,15 +130,32 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void TakeDamage(float damage)
     {
+        GameLogger.Log($"========== [TakeDamage] 开始 ==========", "PlayerController");
+        GameLogger.Log($"[TakeDamage] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}, enabled: {enabled}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] 当前 currentHealth: {currentHealth}, 即将扣除: {damage}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] animator: {(animator != null ? "OK" : "NULL")}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] attackWindow: {(attackWindow != null ? "OK" : "NULL")}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] counterDetector: {(counterDetector != null ? "OK" : "NULL")}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] bossController: {(bossController != null ? bossController.gameObject.name : "NULL")}", "PlayerController");
+        GameLogger.Log($"[TakeDamage] characterStats: {(characterStats != null ? characterStats.characterName : "NULL")}", "PlayerController");
+        
         // 检查是否处于反制无敌状态
-        // if (counterDetector != null && counterDetector.IsInvincible())
-        // {
-        //     GameLogger.Log("Player处于无敌状态，免疫伤害！", "Counter");
-        //     return;
-        // }
+        if (counterDetector != null && counterDetector.IsInvincible())
+        {
+            GameLogger.LogInvincibility("Player处于无敌状态，免疫伤害！");
+            return;
+        }
 
         currentHealth -= damage;
-        GameLogger.LogDamageTaken("Player", damage, currentHealth, maxHealth);
+        currentHealth = Mathf.Max(0, currentHealth); // 确保不会小于0
+        
+        GameLogger.LogDamageTaken("Player", damage, currentHealth, characterStats.maxHealth);
+
+        // 更新血条显示
+        if (hpBar != null)
+        {
+            hpBar.UpdateHP(currentHealth, characterStats.maxHealth);
+        }
 
         // 触发受伤效果（可以在这里添加受伤动画、音效等）
         OnDamaged();
@@ -133,8 +170,26 @@ public class PlayerController : MonoBehaviour
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
     void Initialized()
     {
-        attackWindow.SetDamage(attackDamage);    // 设置攻击判定的伤害值
-        currentHealth = maxHealth;  // 初始化生命值
+        GameLogger.Log($"[Initialized] 开始初始化", "PlayerController");
+        
+        // 验证配置
+        if (characterStats == null)
+        {
+            GameLogger.LogError("CharacterStats未赋值！请在Inspector中拖拽赋值", "PlayerController");
+            return;
+        }
+        
+        // 从配置中读取初始值
+        currentHealth = characterStats.maxHealth;  // 初始化生命值
+        attackWindow.SetDamage(characterStats.attackDamage);    // 设置攻击判定的伤害值
+        
+        GameLogger.Log($"[Initialized] currentHealth 设置为: {currentHealth}, maxHealth: {characterStats.maxHealth}", "PlayerController");
+        
+        // 初始化血条显示
+        if (hpBar != null)
+        {
+            hpBar.SetHP(currentHealth, characterStats.maxHealth);
+        }
     }
 
     /// <summary>
@@ -144,7 +199,6 @@ public class PlayerController : MonoBehaviour
     {
         if (isAttacking)
         {
-            GameLogger.Log("Player当前正在攻击，忽略新的攻击输入", "PlayerController");
             return;
         }
 
@@ -213,13 +267,24 @@ public class PlayerController : MonoBehaviour
     {
         GameLogger.LogDeath("Player");
         
+        // 播放死亡动画
+        if (ComponentValidator.CanPlayAnimation(animator, deathAnimation))
+        {
+            animator.Play(deathAnimation.name);
+        }
+        
+        // 通知Boss停止攻击序列
+        if (bossController != null)
+        {
+            bossController.OnPlayerDeath();
+        }
+        
         // 可以在这里添加：
-        // - 播放死亡动画
-        // - 禁用控制
         // - 显示游戏结束界面
         // - 重置关卡
+        // - 播放游戏结束音效
         
-        // 暂时禁用脚本
+        // 禁用控制
         enabled = false;
     }
 
@@ -232,4 +297,15 @@ public class PlayerController : MonoBehaviour
     //     GameLogger.LogHeal("Player", amount, currentHealth, maxHealth);
     // }
     
+    /// <summary>
+    /// Unity编辑器验证方法（确保退出Play模式后状态重置）
+    /// </summary>
+    void OnValidate()
+    {
+        // 确保在编辑器模式下（非运行时）脚本是启用的
+        if (!Application.isPlaying && !enabled)
+        {
+            enabled = true;
+        }
+    }
 }

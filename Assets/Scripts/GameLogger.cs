@@ -60,6 +60,9 @@ public class GameLogger : MonoBehaviour
     [Tooltip("攻击窗口相关日志（攻击判定窗口开启/关闭、反击判定等）")]
     public bool logAttackWindow = true;
     
+    [Tooltip("反制系统相关日志（反制成功/失败、无敌时间等）")]
+    public bool logCounter = true;
+    
     [Tooltip("伤害系统相关日志（造成伤害、受到伤害、生命值变化等）")]
     public bool logDamage = true;
     
@@ -107,6 +110,63 @@ public class GameLogger : MonoBehaviour
         if (Instance.enableLogging && Instance.logAttackWindow)
         {
             Debug.Log($"<color=orange>[AttackWindow]</color> {message}");
+        }
+    }
+
+    // ==================== 反制系统日志 ====================
+    
+    /// <summary>
+    /// 反制系统日志
+    /// </summary>
+    public static void LogCounter(string message)
+    {
+        if (Instance.enableLogging && Instance.logCounter)
+        {
+            Debug.Log($"<color=yellow>[Counter]</color> {message}");
+        }
+    }
+
+    /// <summary>
+    /// 反制成功日志
+    /// </summary>
+    public static void LogCounterSuccess(string actionName, AttackType attackType)
+    {
+        if (Instance.enableLogging && Instance.logCounter)
+        {
+            Debug.Log($"<color=lime>[Counter]</color> 🎯 完美反制！使用 {actionName} 反制了 {attackType}");
+        }
+    }
+
+    /// <summary>
+    /// 反制失败日志
+    /// </summary>
+    public static void LogCounterFail(string reason)
+    {
+        if (Instance.enableLogging && Instance.logCounter)
+        {
+            Debug.LogWarning($"<color=yellow>[Counter]</color> ❌ 反制失败：{reason}");
+        }
+    }
+
+    /// <summary>
+    /// 反制窗口开始日志
+    /// </summary>
+    public static void LogCounterWindowStart(AttackType attackType)
+    {
+        if (Instance.enableLogging && Instance.logCounter)
+        {
+            Debug.Log($"<color=yellow>[Counter]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
+        }
+    }
+
+    /// <summary>
+    /// 无敌时间日志
+    /// </summary>
+    public static void LogInvincibility(string message)
+    {
+        if (Instance.enableLogging && Instance.logCounter)
+        {
+            Debug.Log($"<color=yellow>[Counter]</color> 🛡️ {message}");
         }
     }
 
