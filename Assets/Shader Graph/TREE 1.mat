@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TREE
+  m_Name: TREE 1
   m_Shader: {fileID: -6465566751694194690, guid: fde23a37420050f4fbe33004acfb0e25, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -69,8 +69,8 @@ Material:
     - _EnableExternalAlpha: 0
     - _InfluenceHeight: 4
     - _SwayStrength: 0.1
-    - _Turbulence: 2
-    - _WindDirection: 0.1
+    - _Turbulence: 1
+    - _WindDirection: 0.05
     - _WindSpeed: 0.1
     - _WindStrenth: 0.1
     m_Colors:
