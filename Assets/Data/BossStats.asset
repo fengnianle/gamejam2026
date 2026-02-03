@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 1000
   attackDamage: 50
+  clashDamage: 40
   characterName: Boss

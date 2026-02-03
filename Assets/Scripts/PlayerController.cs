@@ -65,6 +65,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     [Header("状态")]
     private bool isAttacking = false;
+    private bool canAcceptInput = false; // 是否可以接受玩家输入（初始为false，等待GameManager开启）
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -73,19 +74,14 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         attackWindow = GetComponent<AttackWindow>();
         counterDetector = GetComponent<CounterInputDetector>();
-        
-        GameLogger.Log($"[Awake] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}", "PlayerController");
-        GameLogger.Log($"[Awake] animator: {(animator != null ? "OK" : "NULL")}, attackWindow: {(attackWindow != null ? "OK" : "NULL")}, counterDetector: {(counterDetector != null ? "OK" : "NULL")}", "PlayerController");
     }
 
     void Start()
     {
-        GameLogger.Log($"[Start] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}", "PlayerController");
-        GameLogger.Log($"[Start] bossController: {(bossController != null ? bossController.gameObject.name : "NULL")}", "PlayerController");
-        
         Initialized();
 
-        PlayIdleAnimation();    // 初始播放Idle动画
+        // 强制初始化为Idle状态（确保游戏开始前处于idle）
+        ForcePlayIdle();
     }
 
     void Update()
@@ -96,7 +92,35 @@ public class PlayerController : MonoBehaviour
 
     /// <summary> ----------------------------------------- Public  ----------------------------------------- </summary>
     /// <summary>
-    /// 公共方法：停止攻击可进行下一次攻击（可在动画事件中调用）
+    /// 设置是否接受玩家输入（由GameManager调用）
+    /// </summary>
+    public void SetInputEnabled(bool enabled)
+    {
+        canAcceptInput = enabled;
+        GameLogger.Log($"Player输入已{(enabled ? "启用" : "禁用")}", "PlayerController");
+        
+        // 如果禁用输入，确保播放Idle动画
+        if (!enabled && !isAttacking)
+        {
+            PlayIdleAnimation();
+        }
+    }
+    
+    /// <summary>
+    /// 强制播放Idle动画（由GameManager调用，用于初始化状态）
+    /// </summary>
+    public void ForcePlayIdle()
+    {
+        // 取消所有待执行的Invoke
+        CancelInvoke();
+        isAttacking = false;
+        // 直接播放idle动画，绕过canAcceptInput检查
+        PlayIdleAnimationInternal();
+        GameLogger.Log("Player强制进入Idle状态", "PlayerController");
+    }
+    
+    /// <summary>
+    /// 公共方法：停止攻击可进行下一次政击（可在动画事件中调用）
     /// </summary>
     public void OnAttackComplete()
     {
@@ -130,15 +154,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void TakeDamage(float damage)
     {
-        GameLogger.Log($"========== [TakeDamage] 开始 ==========", "PlayerController");
-        GameLogger.Log($"[TakeDamage] GameObject: {gameObject.name}, InstanceID: {GetInstanceID()}, enabled: {enabled}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] 当前 currentHealth: {currentHealth}, 即将扣除: {damage}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] animator: {(animator != null ? "OK" : "NULL")}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] attackWindow: {(attackWindow != null ? "OK" : "NULL")}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] counterDetector: {(counterDetector != null ? "OK" : "NULL")}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] bossController: {(bossController != null ? bossController.gameObject.name : "NULL")}", "PlayerController");
-        GameLogger.Log($"[TakeDamage] characterStats: {(characterStats != null ? characterStats.characterName : "NULL")}", "PlayerController");
-        
         // 检查是否处于反制无敌状态
         if (counterDetector != null && counterDetector.IsInvincible())
         {
@@ -170,8 +185,6 @@ public class PlayerController : MonoBehaviour
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
     void Initialized()
     {
-        GameLogger.Log($"[Initialized] 开始初始化", "PlayerController");
-        
         // 验证配置
         if (characterStats == null)
         {
@@ -182,8 +195,6 @@ public class PlayerController : MonoBehaviour
         // 从配置中读取初始值
         currentHealth = characterStats.maxHealth;  // 初始化生命值
         attackWindow.SetDamage(characterStats.attackDamage);    // 设置攻击判定的伤害值
-        
-        GameLogger.Log($"[Initialized] currentHealth 设置为: {currentHealth}, maxHealth: {characterStats.maxHealth}", "PlayerController");
         
         // 初始化血条显示
         if (hpBar != null)
@@ -197,7 +208,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void HandleAttackInput()
     {
-        if (isAttacking)
+        // 检查是否可以接受输入（死亡后禁用）
+        if (!canAcceptInput || isAttacking)
         {
             return;
         }
@@ -233,6 +245,12 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void ResetAttackState()
     {
+        // 如果玩家已死亡，不进行任何状态重置
+        if (!canAcceptInput)
+        {
+            return;
+        }
+        
         isAttacking = false;
         PlayIdleAnimation();
     }
@@ -241,6 +259,20 @@ public class PlayerController : MonoBehaviour
     /// 播放Idle动画
     /// </summary>
     void PlayIdleAnimation()
+    {
+        // 如果玩家已死亡，不播放idle动画
+        if (!canAcceptInput)
+        {
+            return;
+        }
+        
+        PlayIdleAnimationInternal();
+    }
+
+    /// <summary>
+    /// 内部方法：直接播放Idle动画（绕过canAcceptInput检查）
+    /// </summary>
+    void PlayIdleAnimationInternal()
     {
         if (ComponentValidator.CanPlayAnimation(animator, idleAnimation))
         {
@@ -261,22 +293,64 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// 冻结死亡动画在最后一帧
+    /// </summary>
+    void FreezeDeathAnimation()
+    {
+        if (animator != null)
+        {
+            // 将animator速度设为0，停留在当前帧（死亡动画的最后一帧）
+            animator.speed = 0f;
+            GameLogger.Log("Player死亡动画播放完成，停留在最后一帧", "PlayerController");
+        }
+        
+        // 现在可以安全地禁用控制器
+        enabled = false;
+    }
+
+    /// <summary>
     /// 死亡处理
     /// </summary>
     void Die()
     {
         GameLogger.LogDeath("Player");
         
+        // 取消所有待执行的Invoke回调（防止攻击动画结束后的回调触发）
+        CancelInvoke();
+        
+        // 立即禁用玩家输入，防止死亡动画被打断
+        canAcceptInput = false;
+        isAttacking = true; // 防止任何攻击状态重置
+        
+        // 禁用反制检测器，停止反制输入检测
+        if (counterDetector != null)
+        {
+            counterDetector.enabled = false;
+            GameLogger.Log("Player死亡，反制检测器已禁用", "PlayerController");
+        }
+        
         // 播放死亡动画
         if (ComponentValidator.CanPlayAnimation(animator, deathAnimation))
         {
             animator.Play(deathAnimation.name);
+            
+            // 在死亡动画播放完成后，暂停animator以停留在最后一帧
+            // 延迟时间设为动画长度，确保动画完整播放
+            Invoke(nameof(FreezeDeathAnimation), deathAnimation.length);
         }
         
-        // 通知Boss停止攻击序列
-        if (bossController != null)
+        // 通知GameManager玩家死亡
+        if (GameManager.Instance != null)
         {
-            bossController.OnPlayerDeath();
+            GameManager.Instance.OnPlayerDeath();
+        }
+        else
+        {
+            // 如果没有GameManager，使用旧的方式通知Boss
+            if (bossController != null)
+            {
+                bossController.OnPlayerDeath();
+            }
         }
         
         // 可以在这里添加：
@@ -284,8 +358,8 @@ public class PlayerController : MonoBehaviour
         // - 重置关卡
         // - 播放游戏结束音效
         
-        // 禁用控制
-        enabled = false;
+        // 禁用控制（但不禁用整个组件，以便Invoke可以执行）
+        // enabled = false; // 注释掉，改为在FreezeDeathAnimation中禁用
     }
 
     /// <summary>

@@ -15,6 +15,9 @@ public class CharacterStats : ScriptableObject
     [Tooltip("攻击力")]
     public float attackDamage = 50f;
     
+    [Tooltip("同步攻击伤害（双方出相同攻击时的伤害值）")]
+    public float clashDamage = 40f;
+    
     [Header("显示信息")]
     [Tooltip("角色名称")]
     public string characterName = "Character";

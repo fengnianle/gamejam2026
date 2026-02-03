@@ -115,19 +115,33 @@ public class AttackWindow : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理反制成功（由CounterInputDetector调用）
+    /// 处理玩家攻击响应（由CounterInputDetector调用）
     /// </summary>
-    public void OnCounterSuccess(string playerAction)
+    /// <param name="playerAction">玩家的攻击动作名称</param>
+    /// <param name="attackResult">攻击结果</param>
+    public void OnPlayerResponse(string playerAction, AttackRelationship.AttackResult attackResult)
     {
         if (!isWindowActive) return;
 
         hasBeenCountered = true;
-        GameLogger.Log($"反制成功！玩家使用 {playerAction} 反制了 {attackType}", "Counter");
+        
+        GameLogger.Log($"玩家使用 {playerAction} 对 {attackType} 做出响应，结果: {AttackRelationship.GetResultDescription(attackResult)}", "Combat");
+        
+        // 根据攻击结果处理伤害
+        HandleDamageByResult(attackResult);
         
         onCounterSuccess?.Invoke(playerAction);
         
         // 立即结束窗口
         EndWindow();
+    }
+    
+    /// <summary>
+    /// 处理反制成功（向后兼容的方法）
+    /// </summary>
+    public void OnCounterSuccess(string playerAction)
+    {
+        OnPlayerResponse(playerAction, AttackRelationship.AttackResult.Counter);
     }
 
     /// <summary>
@@ -157,6 +171,66 @@ public class AttackWindow : MonoBehaviour
         }
 
         GameLogger.LogWarning($"AttackWindow: 目标对象 {targetObject.name} 没有可接收伤害的组件！", "AttackWindow");
+    }
+
+    /// <summary>
+    /// 根据攻击结果处理伤害
+    /// </summary>
+    void HandleDamageByResult(AttackRelationship.AttackResult result)
+    {
+        if (targetObject == null) return;
+
+        var playerController = targetObject.GetComponent<PlayerController>();
+        var bossController = GetComponentInParent<BossController>(); // Boss是攻击者
+        
+        if (bossController == null)
+        {
+            GameLogger.LogError("AttackWindow: 无法找到Boss控制器！", "AttackWindow");
+            return;
+        }
+
+        switch (result)
+        {
+            case AttackRelationship.AttackResult.Counter:
+                // 压制成功：玩家不减血，Boss减血
+                if (bossController != null)
+                {
+                    float counterDamage = bossController.characterStats != null ? 
+                        bossController.characterStats.attackDamage : damage;
+                    bossController.TakeDamage(counterDamage);
+                    GameLogger.LogDamageDealt("Player", gameObject.name, counterDamage);
+                    GameLogger.Log("压制成功！Boss受到伤害，Player安全", "Combat");
+                }
+                break;
+                
+            case AttackRelationship.AttackResult.Clash:
+                // 同时攻击：双方都减血（使用clashDamage）
+                if (playerController != null && bossController != null)
+                {
+                    float clashDamagePlayer = playerController.characterStats != null ? 
+                        playerController.characterStats.clashDamage : damage * 0.8f;
+                    float clashDamageBoss = bossController.characterStats != null ? 
+                        bossController.characterStats.clashDamage : damage * 0.8f;
+                        
+                    playerController.TakeDamage(clashDamagePlayer);
+                    bossController.TakeDamage(clashDamageBoss);
+                    
+                    GameLogger.LogDamageDealt("Boss", "Player", clashDamagePlayer);
+                    GameLogger.LogDamageDealt("Player", "Boss", clashDamageBoss);
+                    GameLogger.Log("同时攻击！双方都受到伤害", "Combat");
+                }
+                break;
+                
+            case AttackRelationship.AttackResult.Hit:
+                // 被击中：玩家减血，Boss不减血
+                if (playerController != null)
+                {
+                    playerController.TakeDamage(damage);
+                    GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+                    GameLogger.Log("玩家被击中！受到伤害", "Combat");
+                }
+                break;
+        }
     }
 
     /// <summary>

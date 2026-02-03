@@ -37,6 +37,9 @@ public class CounterInputDetector : MonoBehaviour
 
     void Update()
     {
+        // 如果组件被禁用，不进行任何检测（玩家死亡时会禁用此组件）
+        if (!enabled) return;
+        
         // 检查无敌时间
         if (isInvincible && Time.time >= invincibilityEndTime)
         {
@@ -107,17 +110,30 @@ public class CounterInputDetector : MonoBehaviour
             return;
         }
 
-        // 检查按键是否正确
-        if (playerInput == expectedAttackType)
+        // 使用AttackRelationship判定攻击结果
+        AttackRelationship.AttackResult result = AttackRelationship.JudgeAttack(expectedAttackType, playerInput);
+        
+        // 根据结果处理
+        switch (result)
         {
-            // 反制成功！
-            OnCounterSuccess(actionName);
-        }
-        else
-        {
-            // 按错了键
-            GameLogger.LogCounterFail($"按键错误（期望: {expectedAttackType}, 实际: {playerInput}）");
-            OnCounterFail();
+            case AttackRelationship.AttackResult.Counter:
+                // 压制成功
+                GameLogger.LogCounterSuccess(actionName, expectedAttackType);
+                GameLogger.Log($"压制成功！{AttackRelationship.GetAttackName(playerInput)} 压制了 {AttackRelationship.GetAttackName(expectedAttackType)}", "Combat");
+                OnPlayerAction(actionName, result);
+                break;
+                
+            case AttackRelationship.AttackResult.Clash:
+                // 同时攻击
+                GameLogger.Log($"同时攻击！玩家和Boss都使用了 {AttackRelationship.GetAttackName(playerInput)}", "Combat");
+                OnPlayerAction(actionName, result);
+                break;
+                
+            case AttackRelationship.AttackResult.Hit:
+                // 被压制
+                GameLogger.LogCounterFail($"被压制！{AttackRelationship.GetAttackName(playerInput)} 被 {AttackRelationship.GetAttackName(expectedAttackType)} 压制");
+                OnPlayerAction(actionName, result);
+                break;
         }
     }
 
@@ -144,6 +160,37 @@ public class CounterInputDetector : MonoBehaviour
         // - 播放反制音效
         // - 显示反制成功特效
         // - 对敌人造成反击伤害
+
+        // 重置状态
+        ResetCounterState();
+        
+        // 隐藏UI提示
+        HideCounterPrompt();
+    }
+
+    /// <summary>
+    /// 处理玩家攻击响应（新方法）
+    /// </summary>
+    void OnPlayerAction(string actionName, AttackRelationship.AttackResult result)
+    {
+        // 通知攻击窗口玩家的响应结果
+        if (currentAttackWindow != null)
+        {
+            currentAttackWindow.OnPlayerResponse(actionName, result);
+        }
+
+        // 只有压制成功时才进入无敌状态
+        if (result == AttackRelationship.AttackResult.Counter)
+        {
+            isInvincible = true;
+            invincibilityEndTime = Time.time + invincibilityTime;
+            GameLogger.LogInvincibility($"Player压制成功，进入无敌状态，持续 {invincibilityTime} 秒");
+        }
+
+        // 可以在这里根据结果添加不同的效果：
+        // - 压制成功：播放反制成功动画、音效、特效
+        // - 同时攻击：播放碰撞音效、震屏效果
+        // - 被压制：播放受击动画、音效
 
         // 重置状态
         ResetCounterState();

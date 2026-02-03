@@ -51,14 +51,21 @@ public class BossController : MonoBehaviour
     /// 动作序列系统
     /// </summary>
     [Header("动作序列设置")]
-    [Tooltip("Boss的动作序列，按顺序执行")]
+    [Tooltip("Boss的攻击模式配置（X=AttackX, Y=AttackY, B=AttackB）")]
+    public List<BossAttackPattern> attackPatterns = new List<BossAttackPattern>();
+    
+    [Tooltip("每个攻击动作的持续时间（秒）")]
+    public float attackDuration = 1f;
+    
+    [Tooltip("Boss的动作序列（自动生成，无需手动配置）")]
+    [HideInInspector]
     public List<BossAction> actionSequence = new List<BossAction>();
     
     [Tooltip("是否循环播放动作序列")]
     public bool loopSequence = true;
     
-    [Tooltip("是否自动开始播放")]
-    public bool autoStart = true;
+    [Tooltip("是否自动开始播放（建议由GameManager控制）")]
+    public bool autoStart = false;
     
     [Tooltip("动作之间的间隔时间（秒）")]
     public float actionInterval = 1f;
@@ -116,15 +123,18 @@ public class BossController : MonoBehaviour
         
         Initialized();
 
-        // 如果动作序列为空，添加默认序列
+        // 从attackPatterns生成actionSequence
+        GenerateActionSequence();
+
+        // 如果动作序列仍然为空，添加默认序列
         if (actionSequence.Count == 0)
         {
-            GameLogger.LogWarning("BossController: TODO: 动作序列为空，添加默认序列。", "BossController");
+            GameLogger.LogWarning("BossController: 动作序列为空，添加默认序列。", "BossController");
             actionSequence.Add(new BossAction { actionType = BossActionType.AttackX, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 1f });
-            actionSequence.Add(new BossAction { actionType = BossActionType.AttackY, duration = 1f });
+            actionSequence.Add(new BossAction { actionType = BossActionType.AttackX, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 1f });
-            actionSequence.Add(new BossAction { actionType = BossActionType.AttackB, duration = 1f });
+            actionSequence.Add(new BossAction { actionType = BossActionType.AttackX, duration = 1f });
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 2f });
         }
 
@@ -132,6 +142,11 @@ public class BossController : MonoBehaviour
         if (autoStart)
         {
             StartSequence();
+        }
+        else
+        {
+            // 如果不自动开始，确保Boss处于Idle状态
+            ForcePlayIdle();
         }
     }
 
@@ -233,7 +248,7 @@ public class BossController : MonoBehaviour
     }
 
     /// <summary>
-    /// 玩家死亡时调用（停止Boss的攻击序列）
+    /// 玩家死亡时调用（停止Boss的政击序列）
     /// </summary>
     public void OnPlayerDeath()
     {
@@ -242,6 +257,51 @@ public class BossController : MonoBehaviour
         
         // 播放胜利动画或待机动画
         PlayIdleAnimation();
+    }
+
+    // ==================== 动作序列控制 ====================
+    /// <summary>
+    /// 开始播放动作序列（由GameManager调用）
+    /// </summary>
+    public void StartSequence()
+    {
+        if (actionSequence.Count == 0)
+        {
+            GameLogger.LogWarning("BossController: 动作序列为空，无法开始播放。", "BossController");
+            return;
+        }
+
+        isPlaying = true;
+        currentActionIndex = 0;
+        ExecuteCurrentAction();
+        
+        GameLogger.LogBossAction("开始攻击序列");
+    }
+
+    /// <summary>
+    /// 停止播放动作序列（由GameManager调用）
+    /// </summary>
+    public void StopSequence()
+    {
+        isPlaying = false;
+        isPerformingAction = false;
+        CancelInvoke();
+        PlayIdleAnimation();
+        
+        GameLogger.LogBossAction("停止攻击序列");
+    }
+    
+    /// <summary>
+    /// 强制播放Idle动画（由GameManager调用，用于初始化状态）
+    /// </summary>
+    public void ForcePlayIdle()
+    {
+        // 取消所有待执行的Invoke
+        CancelInvoke();
+        isPlaying = false;
+        isPerformingAction = false;
+        PlayIdleAnimation();
+        GameLogger.LogBossAction("Boss强制进入Idle状态");
     }
 
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
@@ -265,33 +325,101 @@ public class BossController : MonoBehaviour
         }
     }
 
-    // ==================== 动作序列控制 ====================
     /// <summary>
-    /// 开始播放动作序列
+    /// 从attackPatterns生成actionSequence
     /// </summary>
-    private void StartSequence()
+    void GenerateActionSequence()
     {
-        if (actionSequence.Count == 0)
+        actionSequence.Clear();
+        
+        if (attackPatterns == null || attackPatterns.Count == 0)
         {
-            GameLogger.LogWarning("BossController: 动作序列为空，无法开始播放。", "BossController");
+            GameLogger.LogWarning("BossController: attackPatterns为空，无法生成动作序列。", "BossController");
             return;
         }
 
-        isPlaying = true;
-        currentActionIndex = 0;
-        ExecuteCurrentAction();
+        foreach (var pattern in attackPatterns)
+        {
+            if (string.IsNullOrEmpty(pattern.attackSequence))
+            {
+                GameLogger.LogWarning("BossController: 发现空的攻击序列，跳过。", "BossController");
+                continue;
+            }
+
+            // 解析攻击序列字符串
+            string upperSequence = pattern.attackSequence.ToUpper();
+            for (int i = 0; i < upperSequence.Length; i++)
+            {
+                char c = upperSequence[i];
+                
+                // 跳过空格等空白字符
+                if (char.IsWhiteSpace(c))
+                {
+                    continue;
+                }
+                
+                BossActionType actionType = c switch
+                {
+                    'X' => BossActionType.AttackX,
+                    'Y' => BossActionType.AttackY,
+                    'B' => BossActionType.AttackB,
+                    _ => BossActionType.Idle
+                };
+
+                // 跳过不识别的字符
+                if (c != 'X' && c != 'Y' && c != 'B')
+                {
+                    GameLogger.LogWarning($"BossController: 不识别的攻击字符 '{c}'，跳过。", "BossController");
+                    continue;
+                }
+
+                // 添加攻击动作
+                actionSequence.Add(new BossAction
+                {
+                    actionType = actionType,
+                    duration = attackDuration
+                });
+                
+                // 如果勾选了攻击之间有间隔，且不是最后一个攻击，则添加短暂的间隔
+                if (pattern.hasIntervalBetweenAttacks && i < upperSequence.Length - 1)
+                {
+                    // 检查下一个字符是否也是有效的攻击字符
+                    bool hasNextAttack = false;
+                    for (int j = i + 1; j < upperSequence.Length; j++)
+                    {
+                        if (upperSequence[j] == 'X' || upperSequence[j] == 'Y' || upperSequence[j] == 'B')
+                        {
+                            hasNextAttack = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasNextAttack)
+                    {
+                        actionSequence.Add(new BossAction
+                        {
+                            actionType = BossActionType.Idle,
+                            duration = pattern.intervalBetweenAttacks
+                        });
+                    }
+                }
+            }
+
+            // 在每个pattern结束后添加Idle间隔（作为模式之间的间隔）
+            if (pattern.idleTime > 0)
+            {
+                actionSequence.Add(new BossAction
+                {
+                    actionType = BossActionType.Idle,
+                    duration = pattern.idleTime
+                });
+            }
+        }
+
+        GameLogger.Log($"BossController: 成功生成动作序列，共 {actionSequence.Count} 个动作。", "BossController");
     }
 
-    /// <summary>
-    /// 停止播放动作序列
-    /// </summary>
-    private void StopSequence()
-    {
-        isPlaying = false;
-        isPerformingAction = false;
-        CancelInvoke();
-        PlayIdleAnimation();
-    }
+    // ==================== 动作序列控制 ====================
 
     /// <summary>
     /// 暂停播放动作序列
@@ -424,6 +552,12 @@ public class BossController : MonoBehaviour
             animator.Play(deathAnimation.name);
         }
         
+        // 通知GameManager Boss死亡
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnBossDeath();
+        }
+        
         // 可以在这里添加：
         // - 显示胜利界面
         // - 掉落奖励
@@ -457,6 +591,28 @@ public class BossController : MonoBehaviour
 }
 
 /// <summary> ----------------------------------------- 数据类型 ----------------------------------------- </summary>
+/// <summary>
+/// Boss攻击模式配置
+/// 用于简洁地配置Boss的攻击序列
+/// 例如：attackSequence = "XXX" 表示连续3个AttackX
+/// </summary>
+[System.Serializable]
+public class BossAttackPattern
+{
+    [Tooltip("攻击序列字符串（X=AttackX, Y=AttackY, B=AttackB），例如：XXX表示3个X攻击")]
+    public string attackSequence = "XXX";
+    
+    [Tooltip("攻击动作之间是否有间隔（勾选后每个攻击之间会有间隔）")]
+    public bool hasIntervalBetweenAttacks = false;
+    
+    [ConditionalHide("hasIntervalBetweenAttacks")]
+    [Tooltip("攻击动作之间的间隔时间（秒），仅当勾选了'攻击动作之间是否有间隔'时显示")]
+    public float intervalBetweenAttacks = 0.5f;
+    
+    [Tooltip("此攻击模式结束后的Idle时间（秒），作为模式之间的间隔")]
+    public float idleTime = 2f;
+}
+
 /// <summary>
 /// Boss动作类型枚举
 /// </summary>
