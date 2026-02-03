@@ -49,6 +49,10 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
     
+    [Header("调试选项")]
+    [Tooltip("启用自动反制（用于调试测试，勾选后会自动执行正确的反制动作）")]
+    public bool autoCounterEnabled = false;
+    
     /// <summary>
     /// 组件获取
     /// </summary>
@@ -66,6 +70,7 @@ public class PlayerController : MonoBehaviour
     [Header("状态")]
     private bool isAttacking = false;
     private bool canAcceptInput = false; // 是否可以接受玩家输入（初始为false，等待GameManager开启）
+    private bool hasAutoCountered = false; // 标记本次攻击窗口是否已经自动反制过
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -86,6 +91,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // 自动反制系统（调试用）
+        if (autoCounterEnabled)
+        {
+            HandleAutoCounter();
+        }
+        
         // 检测处理攻击输入
         HandleAttackInput();
     }
@@ -226,6 +237,149 @@ public class PlayerController : MonoBehaviour
         {
             PerformAttack(attackBAnimation);
         }
+    }
+
+    /// <summary>
+    /// 自动反制处理（调试用）
+    /// 关键修复：使用FixedUpdate或检测窗口开启时间，确保在窗口超时前触发
+    /// </summary>
+    void HandleAutoCounter()
+    {
+        // 【调试功能】不检查canAcceptInput，允许在任何时候自动反制
+        // 但仍然检查是否正在攻击，避免打断当前动作
+        if (isAttacking)
+        {
+            return;
+        }
+
+        // 检查Boss是否存在攻击窗口
+        if (bossController == null) return;
+        
+        // 获取Boss的AttackWindow组件
+        AttackWindow bossAttackWindow = bossController.GetComponent<AttackWindow>();
+        if (bossAttackWindow == null) return;
+        
+        // 检查攻击窗口是否激活
+        if (!bossAttackWindow.IsWindowActive())
+        {
+            // 窗口未激活时，重置标记（为下一次攻击做准备）
+            hasAutoCountered = false;
+            return;
+        }
+        
+        // 如果本次攻击窗口已经反制过，不再重复反制
+        if (hasAutoCountered) return;
+        
+        // 【关键修复】立即执行反制，不等待下一帧
+        // 根据Boss的攻击类型，自动执行对应的反制动作
+        AttackType bossAttackType = bossAttackWindow.GetAttackType();
+        ExecuteAutoCounterImmediately(bossAttackType, bossAttackWindow);
+        
+        // 标记已经反制过
+        hasAutoCountered = true;
+    }
+    
+    /// <summary>
+    /// 立即执行自动反制（修复时序问题）
+    /// </summary>
+    void ExecuteAutoCounterImmediately(AttackType bossAttackType, AttackWindow bossAttackWindow)
+    {
+        AnimationClip counterClip = null;
+        string counterKey = "";
+        AttackType playerAttackType = bossAttackType; // 相同的攻击类型才能反制
+        
+        // 根据Boss的攻击类型选择对应的反制动作
+        switch (bossAttackType)
+        {
+            case AttackType.AttackX:
+                counterClip = attackBAnimation;
+                counterKey = "E";
+                playerAttackType = AttackType.AttackB;
+                break;
+            case AttackType.AttackY:
+                counterClip = attackXAnimation;
+                counterKey = "Q";
+                playerAttackType = AttackType.AttackX;
+                break;
+            case AttackType.AttackB:
+                counterClip = attackYAnimation;
+                counterKey = "W";
+                playerAttackType = AttackType.AttackY;
+                break;
+        }
+        
+        if (counterClip != null && ComponentValidator.CanPlayAnimation(animator, counterClip))
+        {
+            GameLogger.Log($"[自动反制] 检测到Boss的{bossAttackType}攻击，立即执行{counterKey}反制", "AutoCounter");
+            
+            // 1. 立即通知Boss窗口反制成功（在播放动画之前！）
+            string actionName = $"{counterKey}键反制(自动)";
+            AttackRelationship.AttackResult result = AttackRelationship.JudgeAttack(bossAttackType, playerAttackType);
+            bossAttackWindow.OnPlayerResponse(actionName, result);
+            
+            GameLogger.Log($"[自动反制] 反制判定完成：{AttackRelationship.GetResultDescription(result)}", "AutoCounter");
+            
+            // 2. 播放Player的攻击动画
+            isAttacking = true;
+            animator.Play(counterClip.name);
+            
+            // 3. 设置Player攻击窗口的攻击类型
+            attackWindow.SetAttackType(playerAttackType);
+            
+            // 4. 启动Player的攻击判定窗口
+            attackWindow.StartWindow();
+            
+            // 5. 通知反制检测器（为了触发无敌状态等效果）
+            if (counterDetector != null)
+            {
+                counterDetector.OnEnemyAttackStart(bossAttackType, bossAttackWindow);
+            }
+            
+            // 6. 延迟关闭Player的攻击窗口和重置状态
+            Invoke(nameof(AutoCounterCleanup), counterClip.length);
+        }
+    }
+    
+    /// <summary>
+    /// 执行自动反制（旧方法，保留以防需要）
+    /// </summary>
+    void ExecuteAutoCounter(AttackType bossAttackType)
+    {
+        // 获取Boss的AttackWindow
+        AttackWindow bossAttackWindow = bossController.GetComponent<AttackWindow>();
+        if (bossAttackWindow != null && bossAttackWindow.IsWindowActive())
+        {
+            ExecuteAutoCounterImmediately(bossAttackType, bossAttackWindow);
+        }
+    }
+    
+    /// <summary>
+    /// 自动反制清理（关闭攻击窗口并重置状态）
+    /// </summary>
+    void AutoCounterCleanup()
+    {
+        // 关闭Player的攻击窗口
+        if (attackWindow != null && attackWindow.IsWindowActive())
+        {
+            attackWindow.EndWindow();
+        }
+        
+        // 重置攻击状态
+        isAttacking = false;
+        
+        // 返回Idle状态（只要玩家还活着）
+        if (canAcceptInput)
+        {
+            PlayIdleAnimation();
+        }
+    }
+    
+    /// <summary>
+    /// 重置自动反制标记（已移除，改为在HandleAutoCounter中自动重置）
+    /// </summary>
+    void ResetAutoCounterFlag()
+    {
+        hasAutoCountered = false;
     }
 
     /// <summary>

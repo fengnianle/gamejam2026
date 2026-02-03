@@ -129,6 +129,7 @@ MonoBehaviour:
   characterStats: {fileID: 11400000, guid: 51f838c321322074281a04f3e957310a, type: 2}
   hpBar: {fileID: 0}
   bossController: {fileID: 0}
+  autoCounterEnabled: 0
 --- !u!114 &5456741115189411642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,9 +144,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 0
   damage: 50
+  windowDuration: 0.25
   isWindowActive: 0
   windowStartTime: 0
-  windowDuration: 0
+  actualWindowDuration: 0
   onWindowStart:
     m_PersistentCalls:
       m_Calls: []

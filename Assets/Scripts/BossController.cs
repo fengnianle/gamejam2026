@@ -46,6 +46,9 @@ public class BossController : MonoBehaviour
     [Header("场景对象引用")]
     [Tooltip("Boss血条UI（请在Inspector中拖拽赋值）")]
     public HPBar hpBar;
+    
+    [Tooltip("Boss的影子控制器（可选，用于预判系统）")]
+    public BossShadowController shadowController;
 
     /// <summary>
     /// 动作序列系统
@@ -273,9 +276,47 @@ public class BossController : MonoBehaviour
 
         isPlaying = true;
         currentActionIndex = 0;
-        ExecuteCurrentAction();
         
-        GameLogger.LogBossAction("开始攻击序列");
+        // 先启动影子（如果存在），让影子提前播放
+        if (shadowController != null)
+        {
+            // 延迟启动影子，让它提前leadTime秒开始
+            Invoke(nameof(StartShadowWithDelay), 0f);
+        }
+        
+        // Boss在影子启动后leadTime秒再启动
+        if (shadowController != null)
+        {
+            Invoke(nameof(StartBossSequence), shadowController.leadTime);
+        }
+        else
+        {
+            // 如果没有影子，立即启动Boss
+            StartBossSequence();
+        }
+        
+        GameLogger.LogBossAction("开始攻击序列（包含影子系统）");
+    }
+    
+    /// <summary>
+    /// 启动影子序列（内部方法）
+    /// </summary>
+    void StartShadowWithDelay()
+    {
+        if (shadowController != null)
+        {
+            shadowController.StartShadowSequence();
+            GameLogger.Log("影子序列已启动", "BossController");
+        }
+    }
+    
+    /// <summary>
+    /// 启动Boss自身的序列（内部方法）
+    /// </summary>
+    void StartBossSequence()
+    {
+        ExecuteCurrentAction();
+        GameLogger.Log("Boss序列已启动", "BossController");
     }
 
     /// <summary>
@@ -287,6 +328,12 @@ public class BossController : MonoBehaviour
         isPerformingAction = false;
         CancelInvoke();
         PlayIdleAnimation();
+        
+        // 同时停止影子
+        if (shadowController != null)
+        {
+            shadowController.StopShadowSequence();
+        }
         
         GameLogger.LogBossAction("停止攻击序列");
     }
@@ -301,6 +348,13 @@ public class BossController : MonoBehaviour
         isPlaying = false;
         isPerformingAction = false;
         PlayIdleAnimation();
+        
+        // 同时强制影子进入Idle
+        if (shadowController != null)
+        {
+            shadowController.ForcePlayIdle();
+        }
+        
         GameLogger.LogBossAction("Boss强制进入Idle状态");
     }
 
@@ -550,6 +604,15 @@ public class BossController : MonoBehaviour
         if (ComponentValidator.CanPlayAnimation(animator, deathAnimation))
         {
             animator.Play(deathAnimation.name);
+            GameLogger.Log("Boss死亡动画开始播放", "BossController");
+            
+            // 在死亡动画播放完成后禁用脚本
+            Invoke(nameof(DisableBossController), deathAnimation.length);
+        }
+        else
+        {
+            // 如果没有死亡动画，立即禁用
+            DisableBossController();
         }
         
         // 通知GameManager Boss死亡
@@ -563,8 +626,14 @@ public class BossController : MonoBehaviour
         // - 掉落奖励
         // - 触发下一阶段或结束战斗
         // - 播放胜利音效
-        
-        // 禁用脚本
+    }
+    
+    /// <summary>
+    /// 禁用Boss控制器（死亡动画播放完成后调用）
+    /// </summary>
+    void DisableBossController()
+    {
+        GameLogger.Log("Boss死亡动画播放完成，禁用控制器", "BossController");
         enabled = false;
     }
 

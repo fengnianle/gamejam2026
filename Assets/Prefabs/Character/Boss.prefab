@@ -127,6 +127,7 @@ MonoBehaviour:
   deathAnimation: {fileID: 7400000, guid: 969ae23d16a51214e8791252fd05a0a1, type: 2}
   characterStats: {fileID: 11400000, guid: bc037b9e8b1c6be40a2cb2ccd3ba2b41, type: 2}
   hpBar: {fileID: 0}
+  shadowController: {fileID: 0}
   attackPatterns:
   - attackSequence: XXX
     hasIntervalBetweenAttacks: 1
@@ -159,9 +160,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 0
   damage: 50
+  windowDuration: 0.25
   isWindowActive: 0
   windowStartTime: 0
-  windowDuration: 0
+  actualWindowDuration: 0
   onWindowStart:
     m_PersistentCalls:
       m_Calls: []

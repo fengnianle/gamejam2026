@@ -50,7 +50,10 @@ public static class AttackRelationship
 
     /// <summary>
     /// 判断玩家攻击是否压制敌人攻击
-    /// 压制关系：X压制B，B压制Y，Y压制X
+    /// 压制关系：X克制Y，Y克制B，B克制X
+    /// X(突刺)快速击中Y(下压重击)的前摇
+    /// Y(下压重击)势大力沉击破B(防御)
+    /// B(防御)挡住X(突刺)
     /// </summary>
     /// <param name="enemyAttack">敌人的攻击类型</param>
     /// <param name="playerAttack">玩家的攻击类型</param>
@@ -60,16 +63,16 @@ public static class AttackRelationship
         switch (enemyAttack)
         {
             case AttackType.AttackX:
-                // 敌人出X，玩家出Y可以压制
-                return playerAttack == AttackType.AttackY;
-                
-            case AttackType.AttackY:
-                // 敌人出Y，玩家出B可以压制
+                // 敌人出X(突刺)，玩家出B(防御)可以压制
                 return playerAttack == AttackType.AttackB;
                 
-            case AttackType.AttackB:
-                // 敌人出B，玩家出X可以压制
+            case AttackType.AttackY:
+                // 敌人出Y(下压)，玩家出X(突刺)可以压制
                 return playerAttack == AttackType.AttackX;
+                
+            case AttackType.AttackB:
+                // 敌人出B(防御)，玩家出Y(下压)可以压制
+                return playerAttack == AttackType.AttackY;
                 
             default:
                 return false;
@@ -86,13 +89,13 @@ public static class AttackRelationship
         switch (attackType)
         {
             case AttackType.AttackX:
-                return AttackType.AttackY; // Y压制X
+                return AttackType.AttackB; // B克制X
                 
             case AttackType.AttackY:
-                return AttackType.AttackB; // B压制Y
+                return AttackType.AttackX; // X克制Y
                 
             case AttackType.AttackB:
-                return AttackType.AttackX; // X压制B
+                return AttackType.AttackY; // Y克制B
                 
             default:
                 return AttackType.AttackX;

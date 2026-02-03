@@ -27,12 +27,17 @@
 
 **压制规则**:
 ```
-AttackX (Q键) 压制 AttackB (E键)
-AttackB (E键) 压制 AttackY (W键)
-AttackY (W键) 压制 AttackX (Q键)
+AttackX (Q键-突刺) 克制 AttackY (W键-下压)
+AttackY (W键-下压) 克制 AttackB (E键-防御)
+AttackB (E键-防御) 克制 AttackX (Q键-突刺)
 ```
 
 形成循环压制关系：**X → Y → B → X**
+
+**设计理念**:
+- X(突刺)快速，能在Y(下压)前摇时击中
+- Y(下压)重击，势大力沉能击破B(防御)
+- B(防御)稳固，能挡住X(突刺)
 
 **三种攻击结果**:
 
@@ -110,11 +115,12 @@ AttackY (W键) 压制 AttackX (Q键)
 
 ### 场景1: 压制成功
 ```
-Boss: 发动 AttackX (石头)
-Player: 及时按下 W键 (AttackY - 布)
+Boss: 发动 AttackY (下压)
+Player: 及时按下 Q键 (AttackX - 突刺)
 结果: Player压制成功！
 - Player: 不减血，获得无敌时间
 - Boss: 减血 (attackDamage)
+解释: 突刺快速击中下压前摇
 ```
 
 ### 场景2: 同时攻击
@@ -128,11 +134,12 @@ Player: 按下 Q键 (AttackX - 石头)
 
 ### 场景3: 被击中
 ```
-Boss: 发动 AttackX (石头)
-Player: 按下 E键 (AttackB - 剪刀) 或 不出招
+Boss: 发动 AttackX (突刺)
+Player: 按下 W键 (AttackY - 下压) 或 不出招
 结果: Player被击中！
 - Player: 减血 (attackDamage)
 - Boss: 不减血
+解释: 下压前摇慢，被突刺击中
 ```
 
 ---

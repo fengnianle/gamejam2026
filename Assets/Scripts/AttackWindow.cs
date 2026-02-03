@@ -17,6 +17,9 @@ public class AttackWindow : MonoBehaviour
     
     [Tooltip("攻击伤害值")]
     public float damage = 50f;
+    
+    [Tooltip("攻击判定窗口持续时间（秒）\n建议值：0.25秒（Unity动画3帧间隔，12fps下）")]
+    public float windowDuration = 0.25f;
 
 
     [Header("窗口状态")]
@@ -26,8 +29,8 @@ public class AttackWindow : MonoBehaviour
     [Tooltip("窗口开始时间")]
     [SerializeField] private float windowStartTime = 0f;
     
-    [Tooltip("窗口持续时间")]
-    [SerializeField] private float windowDuration = 0f;
+    [Tooltip("窗口实际持续时间（运行时计算）")]
+    [SerializeField] private float actualWindowDuration = 0f;
 
     [Header("事件回调")]
     [Tooltip("窗口开启时触发")]
@@ -92,10 +95,10 @@ public class AttackWindow : MonoBehaviour
     {
         if (!isWindowActive) return;
 
-        windowDuration = Time.time - windowStartTime;
+        actualWindowDuration = Time.time - windowStartTime;
         isWindowActive = false;
         
-        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已关闭 - 持续时间: {windowDuration:F2}秒");
+        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已关闭 - 持续时间: {actualWindowDuration:F2}秒");
         onWindowEnd?.Invoke();
     }
 
@@ -248,6 +251,14 @@ public class AttackWindow : MonoBehaviour
     {
         attackType = type;
     }
+    
+    /// <summary>
+    /// 获取当前攻击类型
+    /// </summary>
+    public AttackType GetAttackType()
+    {
+        return attackType;
+    }
 
     /// <summary>
     /// 获取当前窗口是否激活
@@ -263,7 +274,8 @@ public class AttackWindow : MonoBehaviour
     public float GetRemainingTime()
     {
         if (!isWindowActive) return 0f;
-        return windowDuration - (Time.time - windowStartTime);
+        float elapsed = Time.time - windowStartTime;
+        return Mathf.Max(0f, windowDuration - elapsed);
     }
 
     /// <summary>
