@@ -12,6 +12,16 @@ public class GameManager : MonoBehaviour
     /// 单例实例
     /// </summary>
     public static GameManager Instance { get; private set; }
+    
+    /// <summary>
+    /// 静态标记：是否正在Restart（场景重载后直接进入Playing状态）
+    /// </summary>
+    private static bool isRestarting = false;
+    
+    /// <summary>
+    /// 静态标记：是否点击了EndGame（场景重载后完全重置）
+    /// </summary>
+    private static bool isEndGame = false;
 
     /// <summary>
     /// 游戏状态
@@ -30,6 +40,12 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
+    
+    [Tooltip("玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    public PlayerPathRecorder pathRecorder;
+    
+    [Tooltip("玩家影子控制器（可选，用于影子系统）")]
+    public PlayerShadowController playerShadowController;
 
     /// <summary>
     /// UI引用
@@ -38,14 +54,11 @@ public class GameManager : MonoBehaviour
     [Tooltip("开始游戏UI面板（请在Inspector中拖拽赋值）")]
     public GameObject startGamePanel;
     
-    [Tooltip("游戏进行中UI面板（请在Inspector中拖拽赋值）")]
-    public GameObject gameplayPanel;
+    [Tooltip("重新开始按钮（玩家失败时显示，请在Inspector中拖拽赋值）")]
+    public GameObject restartButton;
     
-    [Tooltip("胜利UI面板（请在Inspector中拖拽赋值）")]
-    public GameObject victoryPanel;
-    
-    [Tooltip("失败UI面板（请在Inspector中拖拽赋值）")]
-    public GameObject defeatPanel;
+    [Tooltip("结束游戏按钮（游戏结束时显示，请在Inspector中拖拽赋值）")]
+    public GameObject endButton;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -69,8 +82,70 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // 初始化游戏状态
-        ChangeState(GameState.MainMenu);
+        // 场景重载后，需要重新查找持久化的 PathRecorder
+        if (isRestarting)
+        {
+            // 查找标记为持久化的 PathRecorder（isPersistent = true）
+            PlayerPathRecorder[] allRecorders = FindObjectsOfType<PlayerPathRecorder>();
+            GameLogger.Log($"场景中找到 {allRecorders.Length} 个 PathRecorder", "GameManager");
+            
+            // 优先查找持久化实例
+            foreach (var recorder in allRecorders)
+            {
+                if (recorder.IsPersistent)
+                {
+                    pathRecorder = recorder;
+                    GameLogger.Log($"✅ 找到持久化 PathRecorder，实例ID: {pathRecorder.GetInstanceID()}，路径长度: {recorder.GetMaxPathLength()}", "GameManager");
+                    break;
+                }
+            }
+            
+            // 如果没有找到持久化实例，尝试找有路径数据的实例
+            if (pathRecorder == null)
+            {
+                foreach (var recorder in allRecorders)
+                {
+                    if (recorder.GetMaxPathLength() > 0)
+                    {
+                        pathRecorder = recorder;
+                        GameLogger.Log($"⚠️ 未找到持久化标记，但找到有路径的实例，实例ID: {pathRecorder.GetInstanceID()}，路径长度: {recorder.GetMaxPathLength()}", "GameManager");
+                        break;
+                    }
+                }
+            }
+            
+            // 最后的兜底：使用第一个实例
+            if (pathRecorder == null && allRecorders.Length > 0)
+            {
+                pathRecorder = allRecorders[0];
+                GameLogger.Log($"⚠️ 使用第一个 PathRecorder，实例ID: {pathRecorder.GetInstanceID()}", "GameManager");
+            }
+        }
+        
+        // 检查是否是Restart或EndGame
+        if (isRestarting)
+        {
+            // Restart：直接进入游戏，保留路径数据
+            isRestarting = false;
+            GameLogger.Log("检测到Restart标记，直接进入游戏", "GameManager");
+            ChangeState(GameState.Playing);
+        }
+        else if (isEndGame)
+        {
+            // EndGame：完全重置，清空路径数据
+            isEndGame = false;
+            if (pathRecorder != null)
+            {
+                pathRecorder.ClearAllPathData();
+            }
+            GameLogger.Log("检测到EndGame标记，完全重置游戏", "GameManager");
+            ChangeState(GameState.MainMenu);
+        }
+        else
+        {
+            // 首次启动：初始化为主菜单
+            ChangeState(GameState.MainMenu);
+        }
     }
 
     /// <summary> ----------------------------------------- 公共方法 ----------------------------------------- </summary>
@@ -103,25 +178,54 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// 重新开始游戏（由UI按钮调用）
+    /// Restart保留玩家的最远路径，影子会播放历史路径
     /// </summary>
     public void RestartGame()
     {
-        GameLogger.Log("重新开始游戏", "GameManager");
+        GameLogger.Log("========== RestartGame 开始 ==========", "GameManager");
+        
+        // 设置Restart标记（场景重载后直接进入Playing状态）
+        isRestarting = true;
+        GameLogger.Log("设置 isRestarting = true", "GameManager");
+        
+        // 通知PathRecorder准备Restart（清空当前小局输入）
+        if (pathRecorder != null)
+        {
+            GameLogger.Log($"调用 pathRecorder.PrepareForRestart()，PathRecorder实例ID: {pathRecorder.GetInstanceID()}", "GameManager");
+            pathRecorder.PrepareForRestart();
+        }
+        else
+        {
+            GameLogger.LogError("⚠️ pathRecorder 为 null，无法保存路径！", "GameManager");
+        }
+        
+        GameLogger.Log("准备重新加载场景...", "GameManager");
+        
         // 重新加载当前场景
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>
-    /// 返回主菜单（由UI按钮调用）
+    /// 结束游戏，返回主菜单（由UI按钮调用）
+    /// EndGame完全重置游戏，清空玩家的最远路径
+    /// </summary>
+    public void EndGame()
+    {
+        GameLogger.Log("结束游戏，返回主菜单", "GameManager");
+        
+        // 设置EndGame标记（场景重载后完全重置）
+        isEndGame = true;
+        
+        // 重新加载当前场景
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    
+    /// <summary>
+    /// 返回主菜单（向后兼容方法，调用EndGame）
     /// </summary>
     public void ReturnToMainMenu()
     {
-        GameLogger.Log("返回主菜单", "GameManager");
-        // 如果有主菜单场景，加载主菜单场景
-        // SceneManager.LoadScene("MainMenu");
-        
-        // 如果只是重置当前场景
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        EndGame();
     }
 
     /// <summary>
@@ -144,11 +248,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void InitializeUIState()
     {
-        // 只显示开始游戏面板
+        // 只显示开始游戏面板，隐藏所有按钮
         SetUIActive(startGamePanel, true);
-        SetUIActive(gameplayPanel, false);
-        SetUIActive(victoryPanel, false);
-        SetUIActive(defeatPanel, false);
+        SetUIActive(restartButton, false);
+        SetUIActive(endButton, false);
         
         GameLogger.Log("UI初始状态设置完成", "GameManager");
     }
@@ -224,11 +327,10 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入主菜单状态", "GameManager");
         
-        // 显示开始游戏UI
+        // 显示开始游戏UI，隐藏所有按钮
         SetUIActive(startGamePanel, true);
-        SetUIActive(gameplayPanel, false);
-        SetUIActive(victoryPanel, false);
-        SetUIActive(defeatPanel, false);
+        SetUIActive(restartButton, false);
+        SetUIActive(endButton, false);
         
         // 禁用玩家和Boss的行为
         if (playerController != null)
@@ -261,11 +363,10 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入游戏中状态", "GameManager");
         
-        // 显示游戏进行中UI
+        // 隐藏所有UI
         SetUIActive(startGamePanel, false);
-        SetUIActive(gameplayPanel, true);
-        SetUIActive(victoryPanel, false);
-        SetUIActive(defeatPanel, false);
+        SetUIActive(restartButton, false);
+        SetUIActive(endButton, false);
         
         // 启用玩家输入
         if (playerController != null)
@@ -273,10 +374,39 @@ public class GameManager : MonoBehaviour
             playerController.SetInputEnabled(true);
         }
         
-        // 启动Boss攻击序列
+        // 延迟启动Boss和Player影子，确保所有组件已初始化
+        Invoke(nameof(StartGameSequences), 0.2f);
+    }
+    
+    /// <summary>
+    /// 启动游戏序列（Boss和Player影子）
+    /// </summary>
+    void StartGameSequences()
+    {
+        // 启动Boss攻击序列（包含Boss影子）
         if (bossController != null)
         {
             bossController.StartSequence();
+            GameLogger.Log("GameManager: 已启动Boss序列", "GameManager");
+        }
+        
+        // 启动Player影子
+        if (playerShadowController != null)
+        {
+            // Player影子与Boss影子一样，提前leadTime秒开始
+            Invoke(nameof(StartPlayerShadow), playerShadowController.leadTime);
+            GameLogger.Log($"GameManager: 将在{playerShadowController.leadTime}秒后启动Player影子", "GameManager");
+        }
+    }
+    
+    /// <summary>
+    /// 启动Player影子（延迟调用）
+    /// </summary>
+    void StartPlayerShadow()
+    {
+        if (playerShadowController != null)
+        {
+            playerShadowController.StartShadowSequence();
         }
     }
 
@@ -295,11 +425,10 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入胜利状态", "GameManager");
         
-        // 显示胜利UI
+        // Boss死亡，只显示End按钮
         SetUIActive(startGamePanel, false);
-        SetUIActive(gameplayPanel, false);
-        SetUIActive(victoryPanel, true);
-        SetUIActive(defeatPanel, false);
+        SetUIActive(restartButton, false);
+        SetUIActive(endButton, true);
         
         // 禁用玩家输入
         if (playerController != null)
@@ -334,11 +463,10 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入失败状态", "GameManager");
         
-        // 显示失败UI
+        // 玩家死亡，显示Restart和End按钮
         SetUIActive(startGamePanel, false);
-        SetUIActive(gameplayPanel, false);
-        SetUIActive(victoryPanel, false);
-        SetUIActive(defeatPanel, true);
+        SetUIActive(restartButton, true);
+        SetUIActive(endButton, true);
         
         // 禁用玩家输入（玩家已经死亡，这里确保清理）
         if (playerController != null)

@@ -49,6 +49,12 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
     
+    [Tooltip("玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    public PlayerPathRecorder pathRecorder;
+    
+    [Tooltip("玩家影子控制器（可选，用于影子系统）")]
+    public PlayerShadowController shadowController;
+    
     [Header("调试选项")]
     [Tooltip("启用自动反制（用于调试测试，勾选后会自动执行正确的反制动作）")]
     public bool autoCounterEnabled = false;
@@ -392,6 +398,24 @@ public class PlayerController : MonoBehaviour
         isAttacking = true;
         animator.Play(attackClip.name);
         Invoke(nameof(ResetAttackState), attackClip.length);
+        
+        // 记录玩家输入到路径记录器
+        if (pathRecorder != null)
+        {
+            AttackType attackType = GetAttackTypeFromClip(attackClip);
+            pathRecorder.RecordInput(attackType);
+        }
+    }
+    
+    /// <summary>
+    /// 根据动画片段获取政击类型
+    /// </summary>
+    AttackType GetAttackTypeFromClip(AnimationClip clip)
+    {
+        if (clip == attackXAnimation) return AttackType.AttackX;
+        if (clip == attackYAnimation) return AttackType.AttackY;
+        if (clip == attackBAnimation) return AttackType.AttackB;
+        return AttackType.AttackX; // 默认值
     }
 
     /// <summary>
@@ -491,6 +515,12 @@ public class PlayerController : MonoBehaviour
             // 在死亡动画播放完成后，暂停animator以停留在最后一帧
             // 延迟时间设为动画长度，确保动画完整播放
             Invoke(nameof(FreezeDeathAnimation), deathAnimation.length);
+        }
+        
+        // 通知PathRecorder玩家死亡，更新最远路径
+        if (pathRecorder != null)
+        {
+            pathRecorder.OnPlayerDeath();
         }
         
         // 通知GameManager玩家死亡

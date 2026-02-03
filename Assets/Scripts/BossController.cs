@@ -148,8 +148,18 @@ public class BossController : MonoBehaviour
         }
         else
         {
-            // 如果不自动开始，确保Boss处于Idle状态
-            ForcePlayIdle();
+            // 检查GameManager状态，如果已经Playing则不调用ForcePlayIdle
+            // （Restart后会直接进入Playing状态，GameManager会调用StartSequence）
+            if (GameManager.Instance != null && GameManager.Instance.IsPlaying())
+            {
+                GameLogger.Log("Boss Start: 检测到游戏已在Playing状态，等待GameManager启动序列", "Boss");
+                // 不调用ForcePlayIdle，等待GameManager的OnEnterPlaying调用StartSequence
+            }
+            else
+            {
+                // 如果不自动开始，确俚Boss处于Idle状态
+                ForcePlayIdle();
+            }
         }
     }
 

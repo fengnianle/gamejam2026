@@ -167,8 +167,29 @@ public class AttackWindow : MonoBehaviour
         var bossController = targetObject.GetComponent<BossController>();
         if (bossController != null)
         {
-            bossController.TakeDamage(damage);
-            GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
+            // 检查Boss是否正在攻击窗口内
+            var bossAttackWindow = bossController.GetComponent<AttackWindow>();
+            if (bossAttackWindow != null && bossAttackWindow.IsWindowActive())
+            {
+                // Boss正在攻击，这是一次反制动作
+                // 伤害已经在Boss的AttackWindow.HandleDamageByResult()中处理了
+                // 不应该再次造成伤害，避免双重判定
+                GameLogger.Log($"Player攻击触发反制判定，伤害已在Boss攻击窗口中处理，跳过重复判定", "Combat");
+                return;
+            }
+            
+            // Boss未出招，玩家攻击静止的Boss，造成低伤害
+            var playerCtrl = GetComponentInParent<PlayerController>();
+            float idleDamage = damage; // 默认伤害
+            
+            if (playerCtrl != null && playerCtrl.characterStats != null)
+            {
+                idleDamage = playerCtrl.characterStats.idleAttackDamage;
+            }
+            
+            bossController.TakeDamage(idleDamage);
+            GameLogger.LogDamageDealt(gameObject.name, targetObject.name, idleDamage);
+            GameLogger.Log($"玩家攻击静止的Boss，造成低伤害: {idleDamage}", "Combat");
             onAttackHit?.Invoke(targetObject);
             return;
         }
