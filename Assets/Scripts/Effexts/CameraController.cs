@@ -10,13 +10,22 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float minSize = 5f;
     [SerializeField] private float transitionDuration = 1f;
     
+    [Header("Camera Shake Settings")]
+    [SerializeField] private float shakeIntensity = 1f;
+    [SerializeField] private float shakeDuration = 0.5f;
+    [SerializeField] private AnimationCurve shakeDecayCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+    [SerializeField] private bool enableShakeOnHit = true;
+    
     [Header("Current State")]
     [SerializeField] private bool isAtMaxSize = true;
+    [SerializeField] private bool isShaking = false;
     
     // Singleton instance
     public static CameraController Instance { get; private set; }
     
     private Coroutine transitionCoroutine;
+    private Coroutine shakeCoroutine;
+    private Vector3 originalPosition;
     
     void Awake()
     {
@@ -37,6 +46,12 @@ public class CameraController : MonoBehaviour
         {
             targetCamera = Camera.main;
         }
+        
+        // Store original camera position
+        if (targetCamera != null)
+        {
+            originalPosition = targetCamera.transform.position;
+        }
     }
     
     void Start()
@@ -54,6 +69,12 @@ public class CameraController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F2))
         {
             ToggleCameraSize();
+        }
+        
+        // Check for F4 key press to trigger camera shake
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            StartCameraShake();
         }
     }
     
@@ -172,6 +193,153 @@ public class CameraController : MonoBehaviour
         // Ensure we reach the exact target size
         targetCamera.orthographicSize = targetSize;
         transitionCoroutine = null;
+    }
+    
+    /// <summary>
+    /// Start camera shake with default parameters
+    /// </summary>
+    public void StartCameraShake()
+    {
+        StartCameraShake(shakeIntensity, shakeDuration);
+    }
+    
+    /// <summary>
+    /// Start camera shake with custom intensity and duration
+    /// </summary>
+    /// <param name="intensity">Shake intensity</param>
+    /// <param name="duration">Shake duration in seconds</param>
+    public void StartCameraShake(float intensity, float duration)
+    {
+        if (targetCamera == null) return;
+        
+        // Stop any existing shake
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+        }
+        
+        shakeCoroutine = StartCoroutine(CameraShakeCoroutine(intensity, duration));
+    }
+    
+    /// <summary>
+    /// Stop camera shake immediately
+    /// </summary>
+    public void StopCameraShake()
+    {
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+            shakeCoroutine = null;
+        }
+        
+        // Reset camera position
+        if (targetCamera != null)
+        {
+            Vector3 resetPosition = originalPosition;
+            resetPosition.z = targetCamera.transform.position.z; // Preserve Z position
+            targetCamera.transform.position = resetPosition;
+        }
+        
+        isShaking = false;
+    }
+    
+    /// <summary>
+    /// Set shake parameters
+    /// </summary>
+    /// <param name="intensity">Default shake intensity</param>
+    /// <param name="duration">Default shake duration</param>
+    public void SetShakeParameters(float intensity, float duration)
+    {
+        shakeIntensity = Mathf.Max(0f, intensity);
+        shakeDuration = Mathf.Max(0f, duration);
+    }
+    
+    /// <summary>
+    /// Set shake decay curve
+    /// </summary>
+    /// <param name="curve">Animation curve for shake decay</param>
+    public void SetShakeDecayCurve(AnimationCurve curve)
+    {
+        if (curve != null)
+        {
+            shakeDecayCurve = curve;
+        }
+    }
+    
+    /// <summary>
+    /// Check if camera is currently shaking
+    /// </summary>
+    /// <returns>True if shaking</returns>
+    public bool IsShaking()
+    {
+        return isShaking;
+    }
+    
+    /// <summary>
+    /// Enable or disable automatic shake on hit
+    /// </summary>
+    /// <param name="enable">Enable shake on hit</param>
+    public void SetShakeOnHit(bool enable)
+    {
+        enableShakeOnHit = enable;
+    }
+    
+    /// <summary>
+    /// Trigger a hit shake (if enabled)
+    /// </summary>
+    public void OnHit()
+    {
+        if (enableShakeOnHit)
+        {
+            StartCameraShake();
+        }
+    }
+    
+    /// <summary>
+    /// Trigger a hit shake with custom parameters (if enabled)
+    /// </summary>
+    /// <param name="intensity">Hit shake intensity</param>
+    /// <param name="duration">Hit shake duration</param>
+    public void OnHit(float intensity, float duration)
+    {
+        if (enableShakeOnHit)
+        {
+            StartCameraShake(intensity, duration);
+        }
+    }
+    
+    private IEnumerator CameraShakeCoroutine(float intensity, float duration)
+    {
+        isShaking = true;
+        float elapsedTime = 0f;
+        Vector3 basePosition = originalPosition;
+        basePosition.z = targetCamera.transform.position.z; // Preserve Z position
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+            
+            // Apply decay curve
+            float decayMultiplier = shakeDecayCurve.Evaluate(t);
+            float currentIntensity = intensity * decayMultiplier;
+            
+            // Generate random offset
+            Vector3 randomOffset = new Vector3(
+                Random.Range(-1f, 1f),
+                Random.Range(-1f, 1f),
+                0f
+            ) * currentIntensity;
+            
+            targetCamera.transform.position = basePosition + randomOffset;
+            
+            yield return null;
+        }
+        
+        // Reset to original position
+        targetCamera.transform.position = basePosition;
+        shakeCoroutine = null;
+        isShaking = false;
     }
     
     void OnDestroy()
