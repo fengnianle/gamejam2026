@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.0027, y: -5.87, z: 0}
-  m_LocalScale: {x: 14.205819, y: 7.586717, z: 1}
+  m_LocalScale: {x: 21.310122, y: 12.953052, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2332608724033792749}
@@ -94,8 +94,8 @@ SortingGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 550503017382657524}
   m_Enabled: 1
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1262152615
+  m_SortingLayer: 2
   m_SortingOrder: 100
   m_SortAtRoot: 0
 --- !u!1 &2081320941684539751
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Intensity: 0.5
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 00000000
+  m_ApplyToSortingLayers: 00000000a7eb3a4b
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -165,8 +165,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -0.002700001, y: 0.0013999939, z: 0}
-    m_Extent: {x: 0.5065, y: 0.5014, z: 0}
+    m_Center: {x: 0.0045999885, y: 0.00055000186, z: 0}
+    m_Extent: {x: 0.5046, y: 0.50374997, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0

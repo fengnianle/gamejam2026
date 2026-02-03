@@ -44,3 +44,6 @@ TagManager:
   - name: CameraSortingLayer
     uniqueID: 2803639747
     locked: 0
+  - name: Water
+    uniqueID: 1262152615
+    locked: 0
