@@ -16,7 +16,7 @@ public class PlayerPathRecorder : MonoBehaviour
     [SerializeField] private List<PlayerAction> currentSessionInputs = new List<PlayerAction>();
     
     /// <summary>
-    /// 单例实例（静态引用，方便其他组件访问）
+    /// 单例实例（Scene内单例，不跨Scene持久化）
     /// </summary>
     public static PlayerPathRecorder Instance { get; private set; }
     
@@ -25,19 +25,19 @@ public class PlayerPathRecorder : MonoBehaviour
     public bool showDebugLogs = false;
     
     /// <summary>
-    /// 生命周期：Awake时处理持久化实例逻辑
+    /// 生命周期：Awake时初始化单例
     /// </summary>
     void Awake()
     {
-        // 单例模式实现
+        // 简单单例模式（Scene内唯一）
         if (Instance != null && Instance != this)
         {
+            Debug.LogError("场景中存在多个PlayerPathRecorder！请确保场景中只有一个PlayerPathRecorder。");
             Destroy(gameObject);
             return;
         }
         
         Instance = this;
-        DontDestroyOnLoad(gameObject);
         
         if (showDebugLogs)
         {
@@ -217,24 +217,16 @@ public class PlayerPathRecorder : MonoBehaviour
     }
 
     /// <summary>
-    /// 对象销毁时调用（用于调试）
+    /// 对象销毁时调用
     /// </summary>
     void OnDestroy()
     {
-        if (showDebugLogs)
-        {
-            GameLogger.Log($"[路径记录] ========== OnDestroy 被调用 ==========", "PathRecorder");
-            GameLogger.Log($"[路径记录] 实例ID: {GetInstanceID()}", "PathRecorder");
-            GameLogger.Log($"[路径记录] GameObject名称: {gameObject.name}", "PathRecorder");
-            GameLogger.Log($"[路径记录] playerMaxPath 长度: {playerMaxPath.Count}", "PathRecorder");
-        }
-        
         // 如果销毁的是当前单例实例，清空引用
         if (Instance == this)
         {
             if (showDebugLogs)
             {
-                GameLogger.Log($"[路径记录] ⚠️ 当前实例是 Instance，清空静态引用", "PathRecorder");
+                GameLogger.Log("[路径记录] 单例被销毁", "PathRecorder");
             }
             Instance = null;
         }

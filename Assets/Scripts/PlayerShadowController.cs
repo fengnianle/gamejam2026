@@ -125,6 +125,32 @@ public class PlayerShadowController : MonoBehaviour
     }
 
     /// <summary>
+    /// 重置影子状态（由GameManager调用）
+    /// 注意：不清空shadowSequence，保留序列数据
+    /// </summary>
+    public void ResetState()
+    {
+        GameLogger.Log("重置Player影子状态", "PlayerShadow");
+        
+        // 停止当前播放
+        StopShadowSequence();
+        
+        // 不清空序列，保留数据（StartShadowSequence会重新复制）
+        // shadowSequence.Clear();
+        
+        // 重置状态
+        currentActionIndex = 0;
+        isPlaying = false;
+        isPerformingAction = false;
+        actionTimer = 0f;
+        
+        // 播放Idle
+        ForcePlayIdle();
+        
+        GameLogger.Log("Player影子状态重置完成", "PlayerShadow");
+    }
+
+    /// <summary>
     /// 开始播放影子序列（由GameManager调用）
     /// </summary>
     public void StartShadowSequence()
@@ -181,6 +207,25 @@ public class PlayerShadowController : MonoBehaviour
         isPlaying = false;
         isPerformingAction = false;
         PlayIdleAnimation();
+    }
+
+    /// <summary>
+    /// 确保Animator组件存在（保护方法）
+    /// </summary>
+    void EnsureAnimator()
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                GameLogger.LogError("PlayerShadow: 无法获取Animator组件！", "PlayerShadow");
+            }
+            else
+            {
+                GameLogger.Log("PlayerShadow: Animator组件引用丢失，已重新获取", "PlayerShadow");
+            }
+        }
     }
 
     /// <summary>
@@ -291,6 +336,7 @@ public class PlayerShadowController : MonoBehaviour
     /// </summary>
     void PlayActionAnimation(AttackType attackType)
     {
+        EnsureAnimator(); // 确保animator存在
         if (animator == null) return;
 
         AnimationClip clipToPlay = GetAnimationClip(attackType);
@@ -306,6 +352,7 @@ public class PlayerShadowController : MonoBehaviour
     /// </summary>
     void PlayIdleAnimation()
     {
+        EnsureAnimator(); // 确保animator存在
         if (ComponentValidator.CanPlayAnimation(animator, idleAnimation))
         {
             animator.Play(idleAnimation.name);

@@ -116,6 +116,61 @@ public class PlayerController : MonoBehaviour
 
     /// <summary> ----------------------------------------- Public  ----------------------------------------- </summary>
     /// <summary>
+    /// 重置玩家状态（由GameManager调用，用于Restart/EndGame）
+    /// 注意：不重置canAcceptInput，由GameManager通过SetInputEnabled()统一控制
+    /// </summary>
+    public void ResetState()
+    {
+        GameLogger.Log("重置玩家状态", "PlayerController");
+        
+        // 重新启用组件（死亡时会被禁用）
+        enabled = true;
+        
+        // 恢复animator速度（死亡时会被设为0）
+        if (animator != null)
+        {
+            animator.speed = 1f;
+        }
+        
+        // 取消所有延迟调用
+        CancelInvoke();
+        
+        // 重置状态标记
+        isAttacking = false;
+        // 注意：不重置canAcceptInput，避免与GameManager的SetInputEnabled()冲突
+        hasAutoCountered = false;
+        
+        // 重置生命值
+        if (characterStats != null)
+        {
+            currentHealth = characterStats.maxHealth;
+            
+            // 更新血条显示
+            if (hpBar != null)
+            {
+                hpBar.SetHP(currentHealth, characterStats.maxHealth);
+            }
+        }
+        
+        // 重置动画状态
+        ForcePlayIdle();
+        
+        // 重置攻击窗口
+        if (attackWindow != null)
+        {
+            attackWindow.EndWindow(); // 确保关闭任何打开的窗口
+        }
+        
+        // 重置反制检测器
+        if (counterDetector != null)
+        {
+            counterDetector.enabled = true; // 确保启用
+        }
+        
+        GameLogger.Log("玩家状态重置完成", "PlayerController");
+    }
+    
+    /// <summary>
     /// 设置是否接受玩家输入（由GameManager调用）
     /// </summary>
     public void SetInputEnabled(bool enabled)

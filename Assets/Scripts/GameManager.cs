@@ -1,21 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 游戏管理器（单例模式）
 /// 负责管理整个游戏的生命周期、状态转换和游戏流程
+/// 架构说明：
+/// - 整个游戏在单个Scene中运行，不进行Scene切换
+/// - Restart/EndGame通过重置各组件状态实现，而非销毁重建
+/// - 所有引用保持稳定，避免引用丢失问题
 /// </summary>
 public class GameManager : MonoBehaviour
 {
     /// <summary>
-    /// 单例实例
+    /// 单例实例（Scene内单例，不跨Scene持久化）
     /// </summary>
     public static GameManager Instance { get; private set; }
-    
-    // 状态标记 (使用静态变量确保跨场景/实例的绝对持久性)
-    private static bool isRestarting = false;
-    private static bool isEndGame = false;
 
     /// <summary>
     /// 游戏状态
@@ -57,44 +56,19 @@ public class GameManager : MonoBehaviour
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
     {
-        // 单例模式实现
+        // 简单单例模式（Scene内唯一）
         if (Instance != null && Instance != this)
         {
-            // 如果已经存在持久化的Instance，则将当前场景中的引用更新到Instance中
-            // 因为当场景重新加载时，新场景中的GameManager会携带该场景特有的对象引用（如UI、Player等）
-            // 我们需要把这些新引用赋给那个"活下来"的老GameManager
-            Instance.playerController = playerController;
-            Instance.bossController = bossController;
-            // PathRecorder 也是持久化的单例，无需重新赋值，或者保持指向 Exiting Instance
-            Instance.pathRecorder = PlayerPathRecorder.Instance; 
-            Instance.playerShadowController = playerShadowController;
-            Instance.startButton = startButton;
-            Instance.restartButton = restartButton;
-            Instance.endButton = endButton;
-            
-            // 重新绑定UI事件到持久化实例
-            Instance.RegisterButtonEvents();
-            
-            // 如果不是重启状态，才初始化UI（重启时由OnSceneLoaded处理进入游戏状态）
-            // 注意：isRestarting 现在是静态变量
-            if (!isRestarting)
-            {
-                Instance.InitializeUIState();
-            }
-            
-            // 销毁当前这个新生成的"工具人"GameManager
+            Debug.LogError("场景中存在多个GameManager！请确保场景中只有一个GameManager。");
             Destroy(gameObject);
             return;
         }
         
         Instance = this;
-        DontDestroyOnLoad(gameObject);
         
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        
-        // 立即初始化UI状态，确保只显示开始面板
+        // 初始化UI状态
         InitializeUIState();
-        // 首次绑定事件
+        // 绑定按钮事件
         RegisterButtonEvents();
     }
 
@@ -102,52 +76,16 @@ public class GameManager : MonoBehaviour
     {
         if (Instance == this)
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-            
-            // 取消所有延迟调用，避免在场景关闭时产生"未清理对象"的警告
+            Instance = null;
+            // 取消所有延迟调用
             CancelInvoke();
         }
     }
 
     void Start()
     {
-        // 只有持久化的 Instance 才执行初始化逻辑
-        // 避免新场景中的"工具人" GameManager 在销毁前干扰 UI 状态
-        if (Instance != this) return;
-        
-        // 首次启动：初始化为主菜单
+        // 游戏启动时进入主菜单状态
         ChangeState(GameState.MainMenu);
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // 延迟处理，确保所有新场景对象的 Awake 都执行完毕
-        // 避免在某些"工具人"实例的 Awake 执行前就重置标记
-        Invoke(nameof(ProcessSceneLoadedFlags), 0.01f);
-    }
-    
-    /// <summary>
-    /// 处理场景加载后的标记（延迟调用）
-    /// </summary>
-    void ProcessSceneLoadedFlags()
-    {
-        // 检查是否是Restart或EndGame
-        if (isRestarting)
-        {
-            // Restart：直接进入游戏，保留路径数据
-            isRestarting = false;
-            ChangeState(GameState.Playing);
-        }
-        else if (isEndGame)
-        {
-            // EndGame：完全重置，清空路径数据
-            isEndGame = false;
-            if (pathRecorder != null)
-            {
-                pathRecorder.ClearAllPathData();
-            }
-            ChangeState(GameState.MainMenu);
-        }
     }
 
     /// <summary> ----------------------------------------- 公共方法 ----------------------------------------- </summary>
@@ -181,27 +119,76 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 重新开始游戏（由UI按钮调用）
     /// Restart保留玩家的最远路径，影子会播放历史路径
+    /// 实现方式：重置各组件状态，而非销毁重建
     /// </summary>
     public void RestartGame()
     {
-        // 设置Restart标记（场景重载后直接进入Playing状态）
-        isRestarting = true;
+        GameLogger.Log("重新开始游戏（保留最远路径）", "GameManager");
         
-        // 重新加载当前场景
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // 记录玩家本局的路径到最远路径（如果走得更远）
+        if (pathRecorder != null)
+        {
+            pathRecorder.OnPlayerDeath(); // 更新最远路径
+            pathRecorder.OnRestart();     // 清空当前小局数据
+        }
+        
+        // 重置玩家状态
+        if (playerController != null)
+        {
+            playerController.ResetState();
+        }
+        
+        // 重置Boss状态
+        if (bossController != null)
+        {
+            bossController.ResetState();
+        }
+        
+        // 重置Player影子
+        if (playerShadowController != null)
+        {
+            playerShadowController.ResetState();
+        }
+        
+        // 进入Playing状态
+        ChangeState(GameState.Playing);
     }
 
     /// <summary>
     /// 结束游戏，返回主菜单（由UI按钮调用）
     /// EndGame完全重置游戏，清空玩家的最远路径
+    /// 实现方式：重置各组件状态到初始状态
     /// </summary>
     public void EndGame()
     {
-        // 设置EndGame标记（场景重载后完全重置）
-        isEndGame = true;
+        GameLogger.Log("结束游戏，返回主菜单（完全重置）", "GameManager");
         
-        // 重新加载当前场景
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // 清空所有路径数据
+        if (pathRecorder != null)
+        {
+            pathRecorder.ClearAllPathData();
+        }
+        
+        // 重置玩家状态
+        if (playerController != null)
+        {
+            playerController.ResetState();
+        }
+        
+        // 重置Boss状态
+        if (bossController != null)
+        {
+            bossController.ResetState();
+        }
+        
+        // 重置Player影子
+        if (playerShadowController != null)
+        {
+            playerShadowController.ResetState();
+        }
+        
+        // 返回主菜单状态
+        ChangeState(GameState.MainMenu);
     }
     
     /// <summary>

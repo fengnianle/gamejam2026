@@ -28,7 +28,6 @@ public class GameLogger : MonoBehaviour
                 {
                     GameObject loggerObj = new GameObject("GameLogger");
                     instance = loggerObj.AddComponent<GameLogger>();
-                    DontDestroyOnLoad(loggerObj);
                     
                     Debug.Log("[GameLogger] 自动创建了GameLogger实例。建议在场景中手动创建以便配置。");
                 }
@@ -42,7 +41,6 @@ public class GameLogger : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else if (instance != this)
         {

@@ -127,6 +127,32 @@ public class BossShadowController : MonoBehaviour
 
     /// <summary> ----------------------------------------- Public ----------------------------------------- </summary>
     /// <summary>
+    /// 重置影子状态（由BossController调用）
+    /// 注意：不清空shadowActionSequence，保留序列数据
+    /// </summary>
+    public void ResetState()
+    {
+        GameLogger.Log("重置Boss影子状态", "BossShadow");
+        
+        // 停止当前播放
+        StopShadowSequence();
+        
+        // 不清空序列，保留数据（StartShadowSequence会重新复制）
+        // shadowActionSequence.Clear();
+        
+        // 重置状态
+        currentActionIndex = 0;
+        isPlaying = false;
+        isPerformingAction = false;
+        actionTimer = 0f;
+        
+        // 播放Idle
+        ForcePlayIdle();
+        
+        GameLogger.Log("Boss影子状态重置完成", "BossShadow");
+    }
+    
+    /// <summary>
     /// 开始播放影子动作序列（提前Boss leadTime秒）
     /// </summary>
     public void StartShadowSequence()
@@ -180,6 +206,25 @@ public class BossShadowController : MonoBehaviour
     }
 
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
+    /// <summary>
+    /// 确保Animator组件存在（保护方法）
+    /// </summary>
+    void EnsureAnimator()
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                GameLogger.LogError("BossShadow: 无法获取Animator组件！", "BossShadow");
+            }
+            else
+            {
+                GameLogger.Log("BossShadow: Animator组件引用丢失，已重新获取", "BossShadow");
+            }
+        }
+    }
+    
     /// <summary>
     /// 从Boss控制器复制动作序列
     /// </summary>
@@ -259,6 +304,7 @@ public class BossShadowController : MonoBehaviour
     /// </summary>
     void PlayActionAnimation(BossActionType actionType)
     {
+        EnsureAnimator(); // 确保animator存在
         if (animator == null) return;
 
         AnimationClip clipToPlay = actionType switch
@@ -281,6 +327,7 @@ public class BossShadowController : MonoBehaviour
     /// </summary>
     void PlayIdleAnimation()
     {
+        EnsureAnimator(); // 确保animator存在
         if (ComponentValidator.CanPlayAnimation(animator, idleAnimation))
         {
             animator.Play(idleAnimation.name);
