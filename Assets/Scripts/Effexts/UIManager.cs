@@ -26,7 +26,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] public UnityEvent onOpeningComplete;
-    [SerializeField] public UnityEvent onAnimationComplete;
+    [SerializeField] public UnityEvent onBeginningComplete;  // Beginning动画完成事件
     [SerializeField] public UnityEvent onDieAndRestartComplete;
     
     private bool isFirstLaunch = true;
@@ -92,6 +92,40 @@ public class UIManager : MonoBehaviour
             beginningAnimation.Play(beginningAnimationName);
         }
     }
+    
+    /// <summary>
+    /// Beginning动画完成回调（由Animation Event调用）
+    /// 此方法可以在Beginning动画的最后一帧通过Animation Event调用
+    /// </summary>
+    public void OnBeginningAnimationComplete()
+    {
+        // 触发Beginning完成事件，通知所有监听者（如GameManager）
+        onBeginningComplete?.Invoke();
+    }
+    
+    /// <summary>
+    /// DieAndRestart动画完成回调（由Animation Event调用）
+    /// 此方法可以在DieAndRestart动画的最后一帧通过Animation Event调用
+    /// </summary>
+    public void OnDieAndRestartAnimationComplete()
+    {
+        // 触发DieAndRestart完成事件，通知所有监听者（如GameManager）
+        onDieAndRestartComplete?.Invoke();
+    }
+    
+    /// <summary>
+    /// DieAndRestart动画中间帧回调（由Animation Event调用）
+    /// 此方法在DieAndRestart动画播放到中间某一帧时调用，用于通知GameManager重置游戏状态
+    /// 建议在动画播放到一半左右的时候调用，让玩家和Boss的状态在视觉上合理的时机重置
+    /// </summary>
+    public void OnResetGameState()
+    {
+        // 通知GameManager重置游戏状态
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetGameState();
+        }
+    }
 
     /// <summary>
     /// 播放dieAndRestart动画
@@ -127,11 +161,8 @@ public class UIManager : MonoBehaviour
         // 播放Beginning动画
         PlayBeginningAnimation();
         
-        // 等待Beginning动画后的等待时间
-        yield return new WaitForSeconds(waitAfterBeginning);
-        
-        // 触发Beginning完成事件
-        onAnimationComplete?.Invoke();
+        // 注意：Beginning动画完成事件由Animation Event触发OnBeginningAnimationComplete()
+        // 不在协程中自动触发，以便在动画的任意帧灵活控制触发时机
         
         // 标记不再是第一次启动
         isFirstLaunch = false;

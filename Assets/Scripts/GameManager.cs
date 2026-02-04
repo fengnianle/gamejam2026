@@ -17,21 +17,24 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     /// <summary>
-    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// [!] 必须拖拽赋值的场景对象引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("[!] 场景对象引用 - 必须手动拖拽赋值 [!]")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：UI管理器（请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：UI管理器（请在Inspector中拖拽赋值）")]
     public UIManager uiManager;
     
-    [Tooltip("⚠️ 必须赋值：玩家控制器（请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：脚本演出管理器（请在Inspector中拖拽赋值）")]
+    public CutsceneManager cutsceneManager;
+    
+    [Tooltip("[!] 必须赋值：玩家控制器（请在Inspector中拖拽赋值）")]
     public PlayerController playerController;
     
-    [Tooltip("⚠️ 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
     
-    [Tooltip("⚠️ 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
     public PlayerPathRecorder pathRecorder;
     
     [Tooltip("可选：玩家影子控制器（用于影子系统）")]
@@ -41,21 +44,12 @@ public class GameManager : MonoBehaviour
     /// UI元素引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ UI元素引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("[!] UI元素引用 - 必须手动拖拽赋值 [!]")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：开始游戏按钮（请在Inspector中拖拽赋值）")]
-    public GameObject startButton;
-    
-    [Tooltip("⚠️ 必须赋值：重新开始按钮（玩家失败时显示，请在Inspector中拖拽赋值）")]
-    public GameObject restartButton;
-    
-    [Tooltip("⚠️ 必须赋值：结束游戏按钮（游戏结束时显示，请在Inspector中拖拽赋值）")]
-    public GameObject endButton;
-    
-    [Tooltip("⚠️ 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
     public GameObject playerHPBar;
     
-    [Tooltip("⚠️ 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
+    [Tooltip("[!] 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
     public GameObject bossHPBar;
 
     /// <summary>
@@ -82,10 +76,9 @@ public class GameManager : MonoBehaviour
         
         // 初始化UI状态（隐藏所有UI，等待动画完成）
         InitializeUIState();
-        // 绑定按钮事件
-        RegisterButtonEvents();
-        // 注册UIManager的动画完成回调
-        RegisterUIManagerCallback();
+        
+        // 订阅UIManager的Beginning动画完成事件
+        SubscribeUIEvents();
     }
 
     void OnDestroy()
@@ -93,6 +86,8 @@ public class GameManager : MonoBehaviour
         if (Instance == this)
         {
             Instance = null;
+            // 取消订阅UI事件
+            UnsubscribeUIEvents();
             // 取消所有延迟调用
             CancelInvoke();
         }
@@ -100,21 +95,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // 游戏启动时不立即进入主菜单，等待UIManager的入场动画播放完成
-        // 动画完成后会通过OnAnimationComplete回调显示UI
-        // 此时保持currentState为MainMenu（Awake中已初始化）
-        GameLogger.Log("GameManager启动，等待入场动画播放完成", "GameManager");
+        // 游戏启动时不立即进入主菜单，等待入场动画播放完成
+        // 入场动画完成后会通过Animation Event调用OnOpeningAnimationComplete()
+        // 然后播放开场脚本演出，演出完成后开始比赛
+        GameLogger.Log("GameManager启动，等待入场动画和脚本演出", "GameManager");
     }
 
     /// <summary> ----------------------------------------- 公共方法 ----------------------------------------- </summary>
-    /// <summary>
-    /// 开始游戏（由UI按钮调用）
-    /// </summary>
-    public void StartGame()
-    {
-        GameLogger.Log("开始游戏", "GameManager");
-        ChangeState(GameState.Playing);
-    }
 
     /// <summary>
     /// 玩家死亡回调（由PlayerController调用）
@@ -123,6 +110,18 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("玩家死亡，游戏失败", "GameManager");
         ChangeState(GameState.Defeat);
+        
+        // 播放dieAndRestart动画
+        if (uiManager != null)
+        {
+            uiManager.PlayDieAndRestartAnimation();
+        }
+        else
+        {
+            GameLogger.LogWarning("UIManager未赋值，跳过DieAndRestart动画，直接播放开场演出", "GameManager");
+            // 如果没有UIManager，直接播放开场演出
+            PlayOpeningCutsceneSequence();
+        }
     }
 
     /// <summary>
@@ -135,13 +134,12 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 重新开始游戏（由UI按钮调用）
-    /// Restart保留玩家的最远路径，影子会播放历史路径
-    /// 实现方式：重置各组件状态，而非销毁重建
+    /// 重置游戏状态（由dieAndRestart动画中间帧调用）
+    /// 重置玩家、Boss的生命值和状态，但不启动游戏序列
     /// </summary>
-    public void RestartGame()
+    public void ResetGameState()
     {
-        GameLogger.Log("重新开始游戏（保留最远路径）", "GameManager");
+        GameLogger.Log("重置游戏状态（重置生命值和位置）", "GameManager");
         
         // 记录玩家本局的路径到最远路径（如果走得更远）
         if (pathRecorder != null)
@@ -150,16 +148,22 @@ public class GameManager : MonoBehaviour
             pathRecorder.OnRestart();     // 清空当前小局数据
         }
         
-        // 重置玩家状态
+        // 重置玩家状态（恢复生命值等）
         if (playerController != null)
         {
             playerController.ResetState();
         }
         
-        // 重置Boss状态
+        // 重置Boss状态（恢复生命值等）
         if (bossController != null)
         {
             bossController.ResetState();
+        }
+        
+        // 重置Player和Boss的位置（通过CutsceneManager）
+        if (cutsceneManager != null)
+        {
+            cutsceneManager.ResetCharacterPositions();
         }
         
         // 重置Player影子
@@ -168,12 +172,50 @@ public class GameManager : MonoBehaviour
             playerShadowController.ResetState();
         }
         
-        // 进入Playing状态
+        GameLogger.Log("游戏状态重置完成，等待开场演出后启动游戏", "GameManager");
+    }
+    
+    /// <summary>
+    /// 启动游戏序列（由开场演出完成后调用）
+    /// 启动Boss攻击序列、玩家影子、启用玩家输入
+    /// </summary>
+    void StartGameplay()
+    {
+        GameLogger.Log("启动游戏序列（Boss攻击、玩家输入、影子系统）", "GameManager");
+        
+        // 确保玩家输入已启用
+        if (playerController != null)
+        {
+            playerController.SetInputEnabled(true);
+            GameLogger.Log("玩家输入已启用", "GameManager");
+        }
+        
+        // 进入Playing状态（这会启用玩家输入和启动Boss序列）
         ChangeState(GameState.Playing);
+        
+        // 确保在状态改变后再次检查并启动序列
+        // 延迟启动Boss和Player影子，确保所有组件已初始化
+        Invoke(nameof(StartGameSequences), 0.2f);
     }
 
     /// <summary>
-    /// 结束游戏，返回主菜单（由UI按钮调用）
+    /// 重新开始游戏（向后兼容方法，统一调用ResetGameState + StartGameplay）
+    /// Restart保留玩家的最远路径，影子会播放历史路径
+    /// 实现方式：重置各组件状态，而非销毁重建
+    /// </summary>
+    public void RestartGame()
+    {
+        GameLogger.Log("重新开始游戏（保留最远路径）", "GameManager");
+        
+        // 重置状态
+        ResetGameState();
+        
+        // 启动游戏
+        StartGameplay();
+    }
+
+    /// <summary>
+    /// 结束游戏，返回主菜单（由脚本演出调用）
     /// EndGame完全重置游戏，清空玩家的最远路径
     /// 实现方式：重置各组件状态到初始状态
     /// </summary>
@@ -217,104 +259,187 @@ public class GameManager : MonoBehaviour
         EndGame();
     }
 
-    /// <summary>
-    /// 退出游戏（由UI按钮调用）
-    /// </summary>
-    public void QuitGame()
-    {
-        GameLogger.Log("退出游戏", "GameManager");
-        
-        #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-        #else
-        Application.Quit();
-        #endif
-    }
-
-    /// <summary> ----------------------------------------- 私有方法 ----------------------------------------- </summary>
-    /// <summary>
-    /// 注册UIManager的动画完成回调
-    /// </summary>
-    void RegisterUIManagerCallback()
-    {
-        if (uiManager != null)
-        {
-            // 注册动画完成回调
-            uiManager.onAnimationComplete.AddListener(OnAnimationComplete);
-            GameLogger.Log("已注册UIManager的动画完成回调", "GameManager");
-        }
-        else
-        {
-            GameLogger.LogWarning("UIManager未赋值，将跳过入场动画，直接显示UI", "GameManager");
-            // 如果没有UIManager，直接显示UI
-            OnAnimationComplete();
-        }
-    }
-    
+    /// <summary> ----------------------------------------- 脚本演出回调接口（由Animation Event调用） ----------------------------------------- </summary>
     /// <summary>
     /// 入场动画播放完成的回调
-    /// 显示主菜单UI（Start按钮和血条）
+    /// 此方法由Animation Event调用，在入场动画的最后一帧触发
+    /// 显示血条并开始播放开场脚本演出
     /// </summary>
-    void OnAnimationComplete()
+    public void OnOpeningAnimationComplete()
     {
-        GameLogger.Log("入场动画播放完成，显示主菜单UI", "GameManager");
-        
-        // 显示Start按钮
-        SetUIActive(startButton, true);
+        GameLogger.Log("入场动画播放完成（通过Animation Event触发），准备播放开场脚本演出", "GameManager");
         
         // 显示血条
         SetUIActive(playerHPBar, true);
         SetUIActive(bossHPBar, true);
         
-        // 确保Restart和End按钮隐藏
-        SetUIActive(restartButton, false);
-        SetUIActive(endButton, false);
+        // 开始播放开场脚本演出（Player和Boss移动到中央）
+        if (cutsceneManager != null)
+        {
+            cutsceneManager.PlayOpeningCutscene();
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager未赋值，跳过开场演出，直接开始游戏", "GameManager");
+            // 如果没有CutsceneManager，直接开始游戏
+            OnOpeningCutsceneComplete();
+        }
     }
     
     /// <summary>
-    /// 注册按钮事件（解决场景重载后按钮引用失效的问题）
+    /// 开场脚本演出完成的回调
+    /// 此方法由CutsceneManager调用，在开场演出的最后一帧触发
+    /// 启动游戏序列（状态已在dieAndRestart动画中重置）
     /// </summary>
-    public void RegisterButtonEvents()
+    public void OnOpeningCutsceneComplete()
     {
-        // 绑定 Restart 按钮
-        BindButton(restartButton, RestartGame);
-
-        // 绑定 End 按钮
-        BindButton(endButton, EndGame);
+        GameLogger.Log("开场脚本演出完成，启动游戏序列", "GameManager");
         
-        // 绑定 Start 按钮
-        BindButton(startButton, StartGame);
+        // 启动游戏序列（Boss攻击、玩家输入、影子系统）
+        StartGameplay();
+    }
+    
+    /// <summary>
+    /// 比赛开始脚本演出完成的回调
+    /// 此方法由CutsceneManager调用
+    /// </summary>
+    public void OnGameStartCutsceneComplete()
+    {
+        GameLogger.Log("比赛开始脚本演出完成", "GameManager");
+        // 可以在这里添加额外逻辑
+    }
+    
+    /// <summary>
+    /// 重新开始脚本演出完成的回调
+    /// 此方法由CutsceneManager调用，在重新开始演出的最后一帧触发
+    /// 执行重新开始游戏逻辑
+    /// </summary>
+    public void OnRestartCutsceneComplete()
+    {
+        GameLogger.Log("重新开始脚本演出完成，执行重新开始逻辑", "GameManager");
+        
+        // 执行重新开始逻辑
+        RestartGame();
+    }
+    
+    /// <summary>
+    /// 胜利脚本演出完成的回调
+    /// 此方法由CutsceneManager调用，在胜利演出的最后一帧触发
+    /// 可以在这里添加胜利后的逻辑（如返回主菜单或下一关卡）
+    /// </summary>
+    public void OnVictoryCutsceneComplete()
+    {
+        GameLogger.Log("胜利脚本演出完成", "GameManager");
+        // 可以在这里添加胜利后的逻辑，比如返回主菜单
+        // EndGame();
+    }
+    
+    /// <summary>
+    /// 失败脚本演出完成的回调
+    /// 此方法由CutsceneManager调用，在失败演出的最后一帧触发
+    /// 可以在这里选择重新开始或返回主菜单
+    /// </summary>
+    public void OnDefeatCutsceneComplete()
+    {
+        GameLogger.Log("失败脚本演出完成", "GameManager");
+        // 可以在这里选择自动重新开始或等待玩家选择
+        // RestartGame();
     }
 
+    /// <summary> ----------------------------------------- 私有方法 ----------------------------------------- </summary>
     /// <summary>
-    /// 辅助方法：绑定按钮事件
+    /// 订阅UI事件
     /// </summary>
-    void BindButton(GameObject go, UnityEngine.Events.UnityAction action)
+    void SubscribeUIEvents()
     {
-        if (go != null)
+        if (uiManager != null)
         {
-            Button btn = go.GetComponent<Button>();
-            if (btn == null) btn = go.GetComponentInChildren<Button>(true); // 宽容查找
-            
-            if (btn != null)
-            {
-                btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(action);
-            }
+            // 订阅Beginning动画完成事件
+            uiManager.onBeginningComplete.AddListener(OnBeginningUIAnimationComplete);
+            // 订阅DieAndRestart动画完成事件
+            uiManager.onDieAndRestartComplete.AddListener(OnDieAndRestartUIAnimationComplete);
+            GameLogger.Log("已订阅UIManager的动画完成事件", "GameManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("UIManager未赋值，无法订阅动画完成事件", "GameManager");
         }
     }
-
+    
+    /// <summary>
+    /// 取消订阅UI事件
+    /// </summary>
+    void UnsubscribeUIEvents()
+    {
+        if (uiManager != null)
+        {
+            // 取消订阅Beginning动画完成事件
+            uiManager.onBeginningComplete.RemoveListener(OnBeginningUIAnimationComplete);
+            // 取消订阅DieAndRestart动画完成事件
+            uiManager.onDieAndRestartComplete.RemoveListener(OnDieAndRestartUIAnimationComplete);
+            GameLogger.Log("已取消订阅UIManager的动画完成事件", "GameManager");
+        }
+    }
+    
+    /// <summary>
+    /// Beginning UI动画完成回调（由UIManager的UnityEvent触发）
+    /// 此方法在Beginning动画完成后被调用，然后触发开场脚本演出
+    /// </summary>
+    void OnBeginningUIAnimationComplete()
+    {
+        GameLogger.Log("Beginning UI动画完成，重置游戏状态并播放开场脚本演出", "GameManager");
+        
+        // 显示血条
+        SetUIActive(playerHPBar, true);
+        SetUIActive(bossHPBar, true);
+        
+        // 重置游戏状态（恢复生命值等）
+        ResetGameState();
+        
+        // 开始播放开场脚本演出（Player和Boss移动到中央）
+        PlayOpeningCutsceneSequence();
+    }
+    
+    /// <summary>
+    /// DieAndRestart UI动画完成回调（由UIManager的UnityEvent触发）
+    /// 此方法在DieAndRestart动画完成后被调用，然后触发开场脚本演出
+    /// </summary>
+    void OnDieAndRestartUIAnimationComplete()
+    {
+        GameLogger.Log("DieAndRestart UI动画完成，准备播放开场脚本演出", "GameManager");
+        
+        // 显示血条（确保血条可见）
+        SetUIActive(playerHPBar, true);
+        SetUIActive(bossHPBar, true);
+        
+        // 开始播放开场脚本演出（Player和Boss移动到中央）
+        PlayOpeningCutsceneSequence();
+    }
+    
+    /// <summary>
+    /// 播放开场脚本演出序列（统一方法）
+    /// </summary>
+    void PlayOpeningCutsceneSequence()
+    {
+        // 开始播放开场脚本演出（Player和Boss移动到中央）
+        if (cutsceneManager != null)
+        {
+            cutsceneManager.PlayOpeningCutscene();
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager未赋值，跳过开场演出，直接重新开始游戏", "GameManager");
+            // 如果没有CutsceneManager，直接重新开始游戏
+            OnOpeningCutsceneComplete();
+        }
+    }
+    
     /// <summary>
     /// 初始化UI状态（在Awake中调用，确保启动时UI正确）
     /// 初始时隐藏所有UI，等待入场动画播放完成后再显示
     /// </summary>
     void InitializeUIState()
     {
-        // 隐藏所有按钮（等待入场动画完成）
-        SetUIActive(startButton, false);
-        SetUIActive(restartButton, false);
-        SetUIActive(endButton, false);
-        
         // 隐藏血条（等待入场动画完成）
         SetUIActive(playerHPBar, false);
         SetUIActive(bossHPBar, false);
@@ -393,11 +518,6 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入主菜单状态", "GameManager");
         
-        // 显示开始游戏按钮，隐藏其他按钮
-        SetUIActive(startButton, true);
-        SetUIActive(restartButton, false);
-        SetUIActive(endButton, false);
-        
         // 禁用玩家和Boss的行为
         if (playerController != null)
         {
@@ -428,11 +548,6 @@ public class GameManager : MonoBehaviour
     void OnEnterPlaying()
     {
         GameLogger.Log("进入游戏中状态", "GameManager");
-        
-        // 隐藏所有UI
-        SetUIActive(startButton, false);
-        SetUIActive(restartButton, false);
-        SetUIActive(endButton, false);
         
         // 启用玩家输入
         if (playerController != null)
@@ -491,11 +606,6 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入胜利状态", "GameManager");
         
-        // Boss死亡，只显示End按钮
-        SetUIActive(startButton, false);
-        SetUIActive(restartButton, false);
-        SetUIActive(endButton, true);
-        
         // 禁用玩家输入
         if (playerController != null)
         {
@@ -506,6 +616,12 @@ public class GameManager : MonoBehaviour
         if (bossController != null)
         {
             bossController.StopSequence();
+        }
+        
+        // 播放胜利脚本演出
+        if (cutsceneManager != null)
+        {
+            cutsceneManager.PlayVictoryCutscene();
         }
         
         // 可以在这里添加：
@@ -529,11 +645,6 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("进入失败状态", "GameManager");
         
-        // 玩家死亡，显示Restart和End按钮
-        SetUIActive(startButton, false);
-        SetUIActive(restartButton, true);
-        SetUIActive(endButton, true);
-        
         // 禁用玩家输入（玩家已经死亡，这里确保清理）
         if (playerController != null)
         {
@@ -546,9 +657,11 @@ public class GameManager : MonoBehaviour
             bossController.StopSequence();
         }
         
+        // 注意：失败演出由OnPlayerDeath()中调用的dieAndRestart动画处理
+        // 不在这里播放失败脚本演出
+        
         // 可以在这里添加：
         // - 播放失败音效
-        // - 显示重试提示
         // - 记录游戏数据
     }
 
