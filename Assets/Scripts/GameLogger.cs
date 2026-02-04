@@ -57,6 +57,9 @@ public class GameLogger : MonoBehaviour
     public bool enableLogging = true;
 
     [Header("=== 战斗系统日志 ===")]
+    [Tooltip("调试对峙攻击过程（包含攻击窗口、玩家反制、伤害结算等完整战斗流程日志）")]
+    public bool debugCombatProcess = true;
+    
     [Tooltip("攻击窗口相关日志（攻击判定窗口开启/关闭、反击判定等）")]
     public bool logAttackWindow = true;
     
@@ -320,6 +323,89 @@ public class GameLogger : MonoBehaviour
         {
             Debug.LogError($"<color=red>[{category}]</color> {message}");
         }
+    }
+
+    #endregion
+
+    #region 战斗过程调试日志
+
+    /// <summary>
+    /// 战斗过程日志 - 攻击窗口开启
+    /// </summary>
+    public static void LogCombatAttackWindowStart(string character, AttackType attackType)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        string colorTag = character.Contains("Boss") ? "<color=red>" : "<color=green>";
+        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color> OnAttackWindow Start");
+        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color>: 攻击窗口已开启 - 攻击类型: {attackType}");
+    }
+
+    /// <summary>
+    /// 战斗过程日志 - 攻击窗口关闭
+    /// </summary>
+    public static void LogCombatAttackWindowEnd(string character, float duration)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        string colorTag = character.Contains("Boss") ? "<color=red>" : "<color=green>";
+        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color>: 攻击窗口已关闭 - 持续时间: {duration:F2}秒");
+        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color> OnAttackWindow End");
+    }
+
+    /// <summary>
+    /// 战斗过程日志 - 等待玩家反制
+    /// </summary>
+    public static void LogCombatWaitForCounter(AttackType attackType)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        Debug.Log($"<color=yellow>[Counter]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
+    }
+
+    /// <summary>
+    /// 战斗过程日志 - 玩家反制操作
+    /// </summary>
+    public static void LogCombatPlayerCounter(string actionName, AttackRelationship.AttackResult result)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        string resultText = "";
+        switch (result)
+        {
+            case AttackRelationship.AttackResult.Counter:
+                resultText = "<color=green>压制成功</color>";
+                break;
+            case AttackRelationship.AttackResult.Clash:
+                resultText = "<color=yellow>同时攻击</color>";
+                break;
+            case AttackRelationship.AttackResult.Hit:
+                resultText = "<color=red>被压制</color>";
+                break;
+        }
+        
+        Debug.Log($"<color=yellow>[Counter]</color> <color=green>Player</color> 使用 {actionName}，结果: {resultText}");
+    }
+
+    /// <summary>
+    /// 战斗过程日志 - 伤害结算
+    /// </summary>
+    public static void LogCombatDamage(string target, float damage, float currentHealth, float maxHealth)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        string colorTag = target.Contains("Boss") ? "<color=red>" : "<color=green>";
+        Debug.Log($"<color=magenta>[Damage]</color> {colorTag}{target}</color> 受到 {damage} 点伤害，当前生命值：{currentHealth}/{maxHealth}");
+    }
+
+    /// <summary>
+    /// 战斗过程日志 - Boss执行动作
+    /// </summary>
+    public static void LogCombatBossAction(BossActionType actionType, float duration)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        Debug.Log($"<color=red>[Boss]</color> 执行动作 {actionType}，持续时间 {duration:F1} 秒");
     }
 
     #endregion

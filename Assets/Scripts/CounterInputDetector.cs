@@ -63,7 +63,8 @@ public class CounterInputDetector : MonoBehaviour
         expectedAttackType = attackType;
         isWaitingForInput = true;
 
-        GameLogger.LogCounterWindowStart(attackType);
+        // 使用新的战斗过程日志
+        GameLogger.LogCombatWaitForCounter(attackType);
 
         // 显示反制提示UI
         ShowCounterPrompt(attackType);
@@ -173,6 +174,9 @@ public class CounterInputDetector : MonoBehaviour
     /// </summary>
     void OnPlayerAction(string actionName, AttackRelationship.AttackResult result)
     {
+        // 输出玩家操作日志
+        GameLogger.LogCombatPlayerCounter(actionName, result);
+        
         // 通知攻击窗口玩家的响应结果
         if (currentAttackWindow != null)
         {

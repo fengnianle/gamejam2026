@@ -188,7 +188,8 @@ public class PlayerController : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(0, currentHealth); // 确保不会小于0
         
-        GameLogger.LogDamageTaken("Player", damage, currentHealth, characterStats.maxHealth);
+        // 使用新的战斗过程日志
+        GameLogger.LogCombatDamage("Player", damage, currentHealth, characterStats.maxHealth);
 
         // 更新血条显示
         if (hpBar != null)

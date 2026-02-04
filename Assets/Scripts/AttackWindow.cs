@@ -73,7 +73,7 @@ public class AttackWindow : MonoBehaviour
     }
 
     /// <summary>
-    /// 开启攻击判定窗口（由Animation Event调用）
+    /// 开启政击判定窗口（由Animation Event调用）
     /// </summary>
     public void StartWindow()
     {
@@ -81,7 +81,10 @@ public class AttackWindow : MonoBehaviour
         windowStartTime = Time.time;
         hasBeenCountered = false;
 
-        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已开启 - 攻击类型: {attackType}");
+        // 使用新的战斗过程日志
+        string characterName = gameObject.name.Contains("Boss") || transform.parent != null && transform.parent.name.Contains("Boss") ? "Boss" : "Player";
+        GameLogger.LogCombatAttackWindowStart(characterName, attackType);
+        
         onWindowStart?.Invoke();
         
         // 通知反制系统
@@ -98,7 +101,10 @@ public class AttackWindow : MonoBehaviour
         actualWindowDuration = Time.time - windowStartTime;
         isWindowActive = false;
         
-        GameLogger.LogAttackWindow($"{gameObject.name}: 攻击窗口已关闭 - 持续时间: {actualWindowDuration:F2}秒");
+        // 使用新的战斗过程日志
+        string characterName = gameObject.name.Contains("Boss") || transform.parent != null && transform.parent.name.Contains("Boss") ? "Boss" : "Player";
+        GameLogger.LogCombatAttackWindowEnd(characterName, actualWindowDuration);
+        
         onWindowEnd?.Invoke();
     }
 

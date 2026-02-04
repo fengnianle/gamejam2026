@@ -242,7 +242,8 @@ public class BossController : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(0, currentHealth); // 确保不会小于0
         
-        GameLogger.LogDamageTaken("Boss", damage, currentHealth, characterStats.maxHealth);
+        // 使用新的战斗过程日志
+        GameLogger.LogCombatDamage("Boss", damage, currentHealth, characterStats.maxHealth);
 
         // 更新血条显示
         if (hpBar != null)
@@ -524,7 +525,8 @@ public class BossController : MonoBehaviour
         // 播放对应的动画
         PlayActionAnimation(currentAction.actionType);
 
-        GameLogger.LogBossAction($"执行动作 {currentAction.actionType}，持续时间 {currentAction.duration} 秒");
+        // 使用新的战斗过程日志
+        GameLogger.LogCombatBossAction(currentAction.actionType, currentAction.duration);
     }
 
     /// <summary>
