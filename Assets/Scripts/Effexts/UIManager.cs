@@ -9,20 +9,25 @@ public class UIManager : MonoBehaviour
     [Header("UI Animations")]
     [SerializeField] private Animation openingAnimation;
     [SerializeField] private Animation beginningAnimation;
+    [SerializeField] private Animation dieAndRestartAnimation;
     
     [Header("Animation Settings")]
     [SerializeField] private string openingAnimationName = "OpeningAnimation";
     [SerializeField] private string beginningAnimationName = "BeginningAnimation";
+    [SerializeField] private string dieAndRestartAnimationName = "dieAndRestart";
     
     [Header("Wait Time Settings")]
     [SerializeField] private float waitBeforeOpening = 0f;
     [SerializeField] private float waitAfterOpening = 0f;
     [SerializeField] private float waitBeforeBeginning = 0f;
     [SerializeField] private float waitAfterBeginning = 0f;
-    
+    [SerializeField] private float waitBeforeDieAndRestart = 0f;
+    [SerializeField] private float waitAfterDieAndRestart = 0f;
+
     [Header("Events")]
-    [Tooltip("入场动画播放完成后触发的事件")]
-    public UnityEvent onAnimationComplete;
+    [SerializeField] public UnityEvent onOpeningComplete;
+    [SerializeField] public UnityEvent onAnimationComplete;
+    [SerializeField] public UnityEvent onDieAndRestartComplete;
     
     private bool isFirstLaunch = true;
     
@@ -46,6 +51,15 @@ public class UIManager : MonoBehaviour
         if (isFirstLaunch)
         {
             PlayStartupSequence();
+        }
+    }
+
+    private void Update()
+    {
+        // 检测F5键按下
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            PlayDieAndRestartAnimation();
         }
     }
     
@@ -78,6 +92,14 @@ public class UIManager : MonoBehaviour
             beginningAnimation.Play(beginningAnimationName);
         }
     }
+
+    /// <summary>
+    /// 播放dieAndRestart动画
+    /// </summary>
+    public void PlayDieAndRestartAnimation()
+    {
+        StartCoroutine(DieAndRestartCoroutine());
+    }
     
     private IEnumerator StartupSequenceCoroutine()
     {
@@ -93,6 +115,9 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(GetAnimationLength(openingAnimation, openingAnimationName));
         }
         
+        // 触发Opening完成事件
+        onOpeningComplete?.Invoke();
+        
         // 等待Opening动画后的等待时间
         yield return new WaitForSeconds(waitAfterOpening);
         
@@ -102,21 +127,35 @@ public class UIManager : MonoBehaviour
         // 播放Beginning动画
         PlayBeginningAnimation();
         
-        // 等待Beginning动画播放完毕
-        if (beginningAnimation != null)
-        {
-            yield return new WaitForSeconds(GetAnimationLength(beginningAnimation, beginningAnimationName));
-        }
-        
         // 等待Beginning动画后的等待时间
         yield return new WaitForSeconds(waitAfterBeginning);
         
+        // 触发Beginning完成事件
+        onAnimationComplete?.Invoke();
+        
         // 标记不再是第一次启动
         isFirstLaunch = false;
+    }
+    
+    private IEnumerator DieAndRestartCoroutine()
+    {
+        // 等待dieAndRestart动画前的等待时间
+        yield return new WaitForSeconds(waitBeforeDieAndRestart);
         
-        // 触发动画完成事件，通知GameManager显示UI
-        onAnimationComplete?.Invoke();
-        GameLogger.Log("UIManager: 入场动画播放完成，通知GameManager显示UI", "UIManager");
+        // 播放dieAndRestart动画
+        if (dieAndRestartAnimation != null)
+        {
+            dieAndRestartAnimation.Play(dieAndRestartAnimationName);
+            
+            // 等待动画播放完毕
+            yield return new WaitForSeconds(GetAnimationLength(dieAndRestartAnimation, dieAndRestartAnimationName));
+        }
+        
+        // 等待dieAndRestart动画后的等待时间
+        yield return new WaitForSeconds(waitAfterDieAndRestart);
+        
+        // 触发DieAndRestart完成事件
+        onDieAndRestartComplete?.Invoke();
     }
     
     private float GetAnimationLength(Animation animation, string animationName)

@@ -2933,8 +2933,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.0627, y: -0.032050014, z: 0}
-    m_Extent: {x: 1.3106, y: 3.91395, z: 0}
+    m_Center: {x: -1.0654, y: -0.030900002, z: 0}
+    m_Extent: {x: 1.3003999, y: 3.915, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -4188,11 +4188,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!111 &1698404489 stripped
-Animation:
-  m_CorrespondingSourceObject: {fileID: 862634336885786899, guid: c0d7ffe6078862847b55448c695d1c97, type: 3}
-  m_PrefabInstance: {fileID: 3396450913178744645}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1698795374
 GameObject:
   m_ObjectHideFlags: 0
@@ -4803,8 +4798,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.356, y: 0.52805007, z: 0}
-    m_Extent: {x: 1.1262, y: 3.9267502, z: 0}
+    m_Center: {x: -1.3544, y: 0.52094996, z: 0}
+    m_Extent: {x: 1.1253, y: 3.9253502, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -5297,18 +5292,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 317106765604867449, guid: c0d7ffe6078862847b55448c695d1c97, type: 3}
-      propertyPath: openingAnimation
-      value: 
-      objectReference: {fileID: 1698404489}
-    - target: {fileID: 317106765604867449, guid: c0d7ffe6078862847b55448c695d1c97, type: 3}
-      propertyPath: beginningAnimation
-      value: 
-      objectReference: {fileID: 1698404489}
-    - target: {fileID: 862634336885786899, guid: c0d7ffe6078862847b55448c695d1c97, type: 3}
-      propertyPath: m_PlayAutomatically
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3581677797700132438, guid: c0d7ffe6078862847b55448c695d1c97, type: 3}
       propertyPath: m_Pivot.x
       value: 0
