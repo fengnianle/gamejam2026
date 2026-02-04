@@ -89,6 +89,13 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        // 如果 pathRecorder 未手动赋值，自动从单例获取
+        if (pathRecorder == null)
+        {
+            pathRecorder = PlayerPathRecorder.Instance;
+            GameLogger.Log("PlayerController: pathRecorder 未手动赋值，自动从单例获取", "PlayerController");
+        }
+        
         Initialized();
 
         // 强制初始化为Idle状态（确保游戏开始前处于idle）
@@ -400,10 +407,24 @@ public class PlayerController : MonoBehaviour
         Invoke(nameof(ResetAttackState), attackClip.length);
         
         // 记录玩家输入到路径记录器
+        // 如果引用丢失，重新从单例获取
+        if (pathRecorder == null)
+        {
+            pathRecorder = PlayerPathRecorder.Instance;
+            if (pathRecorder != null)
+            {
+                GameLogger.Log("PlayerController.PerformAttack(): pathRecorder 引用丢失，重新从单例获取", "PlayerController");
+            }
+        }
+        
         if (pathRecorder != null)
         {
             AttackType attackType = GetAttackTypeFromClip(attackClip);
             pathRecorder.RecordInput(attackType);
+        }
+        else
+        {
+            GameLogger.LogError("PlayerController.PerformAttack(): pathRecorder 为 null，无法记录输入！", "PlayerController");
         }
     }
     
@@ -518,9 +539,20 @@ public class PlayerController : MonoBehaviour
         }
         
         // 通知PathRecorder玩家死亡，更新最远路径
+        // 如果引用丢失，重新从单例获取
+        if (pathRecorder == null)
+        {
+            pathRecorder = PlayerPathRecorder.Instance;
+            GameLogger.Log("PlayerController.Die(): pathRecorder 引用丢失，重新从单例获取", "PlayerController");
+        }
+        
         if (pathRecorder != null)
         {
             pathRecorder.OnPlayerDeath();
+        }
+        else
+        {
+            GameLogger.LogError("PlayerController.Die(): pathRecorder 为 null，无法通知死亡事件！", "PlayerController");
         }
         
         // 通知GameManager玩家死亡

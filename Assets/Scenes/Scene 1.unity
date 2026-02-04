@@ -409,7 +409,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerMaxPath: []
   currentSessionInputs: []
-  isPersistent: 0
   showDebugLogs: 1
 --- !u!1 &519420028
 GameObject:
@@ -1710,7 +1709,7 @@ MonoBehaviour:
   bossController: {fileID: 1829565230}
   pathRecorder: {fileID: 434644534}
   playerShadowController: {fileID: 4459282447938350482}
-  startGamePanel: {fileID: 69183947}
+  startButton: {fileID: 69183947}
   restartButton: {fileID: 643620353}
   endButton: {fileID: 2024774386}
 --- !u!1 &1575364438

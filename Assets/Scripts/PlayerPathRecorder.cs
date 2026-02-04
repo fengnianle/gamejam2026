@@ -16,111 +16,32 @@ public class PlayerPathRecorder : MonoBehaviour
     [SerializeField] private List<PlayerAction> currentSessionInputs = new List<PlayerAction>();
     
     /// <summary>
-    /// 标记：当前对象是否被 DontDestroyOnLoad 保护
-    /// </summary>
-    [SerializeField] private bool isPersistent = false;
-    
-    /// <summary>
     /// 单例实例（静态引用，方便其他组件访问）
     /// </summary>
     public static PlayerPathRecorder Instance { get; private set; }
     
-    /// <summary>
-    /// 获取是否为持久化实例（公共只读属性）
-    /// </summary>
-    public bool IsPersistent => isPersistent;
-    
     [Header("调试信息")]
     [Tooltip("显示详细的路径记录日志")]
-    public bool showDebugLogs = true;
+    public bool showDebugLogs = false;
     
     /// <summary>
     /// 生命周期：Awake时处理持久化实例逻辑
     /// </summary>
     void Awake()
     {
-        if (showDebugLogs)
+        // 单例模式实现
+        if (Instance != null && Instance != this)
         {
-            GameLogger.Log($"[路径记录] ========== PathRecorder Awake ==========", "PathRecorder");
-            GameLogger.Log($"[路径记录] 当前实例ID: {GetInstanceID()}", "PathRecorder");
-            GameLogger.Log($"[路径记录] isPersistent: {isPersistent}", "PathRecorder");
-            GameLogger.Log($"[路径记录] Instance 是否为 null: {Instance == null}", "PathRecorder");
+            Destroy(gameObject);
+            return;
         }
         
-        // 查找所有 PlayerPathRecorder 实例
-        PlayerPathRecorder[] allRecorders = FindObjectsOfType<PlayerPathRecorder>();
-        
-        if (showDebugLogs)
-        {
-            GameLogger.Log($"[路径记录] 场景中找到 {allRecorders.Length} 个 PathRecorder 实例", "PathRecorder");
-        }
-        
-        // 如果场景中有多个实例，说明有旧的持久化实例存在
-        if (allRecorders.Length > 1)
-        {
-            // 查找持久化实例（标记为 isPersistent 的）
-            PlayerPathRecorder persistentInstance = null;
-            foreach (var recorder in allRecorders)
-            {
-                if (recorder.isPersistent && recorder != this)
-                {
-                    persistentInstance = recorder;
-                    break;
-                }
-            }
-            
-            if (persistentInstance != null)
-            {
-                // 找到了旧的持久化实例，销毁当前新实例
-                if (showDebugLogs)
-                {
-                    GameLogger.Log($"[路径记录] ✅ 找到持久化实例(ID:{persistentInstance.GetInstanceID()})，路径长度：{persistentInstance.playerMaxPath.Count}", "PathRecorder");
-                    
-                    if (persistentInstance.playerMaxPath.Count > 0)
-                    {
-                        string pathString = "持久化实例的路径：";
-                        for (int i = 0; i < persistentInstance.playerMaxPath.Count; i++)
-                        {
-                            pathString += $"[{i}]{persistentInstance.playerMaxPath[i].attackType}";
-                            if (i < persistentInstance.playerMaxPath.Count - 1) pathString += " → ";
-                        }
-                        GameLogger.Log(pathString, "PathRecorder");
-                    }
-                    
-                    GameLogger.Log($"[路径记录] ⚠️ 销毁当前新实例(ID:{GetInstanceID()})，保留持久化实例", "PathRecorder");
-                }
-                
-                // 销毁当前实例（Instance 保持指向持久化实例）
-                Destroy(gameObject);
-                return;
-            }
-            else if (!isPersistent)
-            {
-                // 没有找到持久化标记的实例，但有多个实例，销毁非持久化的实例
-                if (showDebugLogs)
-                {
-                    GameLogger.Log($"[路径记录] ⚠️ 发现多个实例但无持久化标记，销毁当前实例(ID:{GetInstanceID()})", "PathRecorder");
-                }
-                Destroy(gameObject);
-                return;
-            }
-        }
-        
-        // 设置单例引用（只有保留下来的实例才设置）
         Instance = this;
+        DontDestroyOnLoad(gameObject);
         
-        // 如果是唯一实例，或者是持久化实例，保留
         if (showDebugLogs)
         {
-            if (isPersistent)
-            {
-                GameLogger.Log($"[路径记录] ✅ 当前实例是持久化实例，保留数据，长度：{playerMaxPath.Count}", "PathRecorder");
-            }
-            else
-            {
-                GameLogger.Log($"[路径记录] 首次创建，初始化实例", "PathRecorder");
-            }
-            GameLogger.Log($"[路径记录] ✅ 设置 Instance = this (ID:{GetInstanceID()})", "PathRecorder");
+            GameLogger.Log($"[路径记录] 初始化成功 (ID:{GetInstanceID()})", "PathRecorder");
         }
     }
 
@@ -221,80 +142,6 @@ public class PlayerPathRecorder : MonoBehaviour
     }
     
     /// <summary>
-    /// 准备Restart（场景重载前调用）
-    /// 使用 DontDestroyOnLoad 保护当前实例，使其在场景重载后仍然存在
-    /// </summary>
-    public void PrepareForRestart()
-    {
-        if (showDebugLogs)
-        {
-            GameLogger.Log($"[路径记录] ========== PrepareForRestart 开始 ==========", "PathRecorder");
-            GameLogger.Log($"[路径记录] 实例ID: {GetInstanceID()}", "PathRecorder");
-            GameLogger.Log($"[路径记录] GameObject名称: {gameObject.name}", "PathRecorder");
-            GameLogger.Log($"[路径记录] 父对象: {(transform.parent == null ? "无(根对象)" : transform.parent.name)}", "PathRecorder");
-            GameLogger.Log($"[路径记录] playerMaxPath 长度：{playerMaxPath.Count}", "PathRecorder");
-            GameLogger.Log($"[路径记录] currentSessionInputs 长度：{currentSessionInputs.Count}", "PathRecorder");
-            
-            // 打印路径内容（添加异常处理）
-            if (playerMaxPath.Count > 0)
-            {
-                try
-                {
-                    string pathString = "当前路径内容：";
-                    for (int i = 0; i < playerMaxPath.Count; i++)
-                    {
-                        if (playerMaxPath[i] == null)
-                        {
-                            pathString += $"[{i}]null";
-                            GameLogger.LogError($"⚠️ playerMaxPath[{i}] 为 null！", "PathRecorder");
-                        }
-                        else
-                        {
-                            pathString += $"[{i}]{playerMaxPath[i].attackType}";
-                        }
-                        
-                        if (i < playerMaxPath.Count - 1) pathString += " → ";
-                    }
-                    GameLogger.Log(pathString, "PathRecorder");
-                }
-                catch (System.Exception ex)
-                {
-                    GameLogger.LogError($"打印路径时发生异常：{ex.Message}\n{ex.StackTrace}", "PathRecorder");
-                }
-            }
-            else
-            {
-                GameLogger.Log("[路径记录] playerMaxPath 为空，无路径内容", "PathRecorder");
-            }
-        }
-        
-        // 注意：OnPlayerDeath() 已经在 PlayerController.Die() 中被调用过了
-        // currentSessionInputs 应该已经被合并并清空
-        
-        // 标记为持久化实例
-        isPersistent = true;
-        
-        // ⚠️ 重要：如果有父对象，必须先解除父子关系，否则 DontDestroyOnLoad 会失效！
-        if (transform.parent != null)
-        {
-            if (showDebugLogs)
-            {
-                GameLogger.Log($"[路径记录] ⚠️ 检测到父对象 '{transform.parent.name}'，解除父子关系", "PathRecorder");
-            }
-            transform.SetParent(null);
-        }
-        
-        // 使用 DontDestroyOnLoad 保护当前对象，使其在场景重载后仍然存在
-        DontDestroyOnLoad(gameObject);
-        
-        if (showDebugLogs)
-        {
-            GameLogger.Log($"[路径记录] ✅ PrepareForRestart 完成 - 对象已标记为 DontDestroyOnLoad + isPersistent", "PathRecorder");
-            GameLogger.Log($"[路径记录] 当前场景: {gameObject.scene.name}", "PathRecorder");
-        }
-    }
-
-    /// <summary>
     /// EndGame时调用
     /// 完全重置所有路径数据
     /// </summary>
@@ -317,12 +164,9 @@ public class PlayerPathRecorder : MonoBehaviour
         currentSessionInputs.Clear();
         playerMaxPath.Clear();
         
-        // 清理持久化标记
-        isPersistent = false;
-        
         if (showDebugLogs)
         {
-            GameLogger.Log("[路径记录] 清空所有路径数据（包括持久化标记）", "PathRecorder");
+            GameLogger.Log("[路径记录] 清空所有路径数据", "PathRecorder");
         }
     }
 
@@ -382,7 +226,6 @@ public class PlayerPathRecorder : MonoBehaviour
             GameLogger.Log($"[路径记录] ========== OnDestroy 被调用 ==========", "PathRecorder");
             GameLogger.Log($"[路径记录] 实例ID: {GetInstanceID()}", "PathRecorder");
             GameLogger.Log($"[路径记录] GameObject名称: {gameObject.name}", "PathRecorder");
-            GameLogger.Log($"[路径记录] isPersistent: {isPersistent}", "PathRecorder");
             GameLogger.Log($"[路径记录] playerMaxPath 长度: {playerMaxPath.Count}", "PathRecorder");
         }
         

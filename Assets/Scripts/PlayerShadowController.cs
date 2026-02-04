@@ -99,60 +99,11 @@ public class PlayerShadowController : MonoBehaviour
         // 使用单例引用 PathRecorder（不再需要手动拖拽或查找）
         if (pathRecorder == null)
         {
-            GameLogger.Log("PlayerShadow: pathRecorder 未手动赋值，使用单例 Instance", "PlayerShadow");
             pathRecorder = PlayerPathRecorder.Instance;
-        }
-        
-        if (pathRecorder != null)
-        {
-            GameLogger.Log($"PlayerShadow: ✅ pathRecorder 已设置，实例ID: {pathRecorder.GetInstanceID()}, IsPersistent: {pathRecorder.IsPersistent}", "PlayerShadow");
-        }
-        else
-        {
-            GameLogger.LogError("PlayerShadow: ❌ 无法获取 PathRecorder（Instance 为 null）", "PlayerShadow");
         }
         
         // 初始化为Idle状态
         ForcePlayIdle();
-        
-        // 延迟检查路径恢复（确保PathRecorder的Awake已执行）
-        Invoke(nameof(CheckPathRecovery), 0.1f);
-    }
-    
-    /// <summary>
-    /// 检查路径恢复情况（调试用）
-    /// </summary>
-    void CheckPathRecovery()
-    {
-        GameLogger.Log($"PlayerShadow: CheckPathRecovery 开始", "PlayerShadow");
-        GameLogger.Log($"PlayerShadow: pathRecorder == null ? {pathRecorder == null}", "PlayerShadow");
-        GameLogger.Log($"PlayerShadow: PlayerPathRecorder.Instance == null ? {PlayerPathRecorder.Instance == null}", "PlayerShadow");
-        
-        // 如果 pathRecorder 仍然为 null，尝试使用单例
-        if (pathRecorder == null && PlayerPathRecorder.Instance != null)
-        {
-            pathRecorder = PlayerPathRecorder.Instance;
-            GameLogger.Log($"PlayerShadow: ✅ 从单例获取 PathRecorder，实例ID: {pathRecorder.GetInstanceID()}", "PlayerShadow");
-        }
-        
-        if (pathRecorder != null)
-        {
-            int pathLength = pathRecorder.GetMaxPathLength();
-            GameLogger.Log($"PlayerShadow: pathRecorder 实例ID: {pathRecorder.GetInstanceID()}, IsPersistent: {pathRecorder.IsPersistent}", "PlayerShadow");
-            
-            if (pathLength > 0)
-            {
-                GameLogger.Log($"PlayerShadow: ✅ 检测到路径数据已恢复，长度：{pathLength}", "PlayerShadow");
-            }
-            else
-            {
-                GameLogger.Log("PlayerShadow: 路径为空（首次游戏或EndGame后）", "PlayerShadow");
-            }
-        }
-        else
-        {
-            GameLogger.LogError("PlayerShadow: ❌ 仍然无法找到 PathRecorder！", "PlayerShadow");
-        }
     }
 
     void Update()
@@ -178,14 +129,10 @@ public class PlayerShadowController : MonoBehaviour
     /// </summary>
     public void StartShadowSequence()
     {
-        GameLogger.Log($"PlayerShadow: ========== StartShadowSequence 被调用 ==========", "PlayerShadow");
-        GameLogger.Log($"PlayerShadow: pathRecorder == null ? {pathRecorder == null}", "PlayerShadow");
-        
         if (pathRecorder == null)
         {
             // 尝试从单例获取
             pathRecorder = PlayerPathRecorder.Instance;
-            GameLogger.Log($"PlayerShadow: 从单例重新获取 PathRecorder，Instance == null ? {PlayerPathRecorder.Instance == null}", "PlayerShadow");
             
             if (pathRecorder == null)
             {
@@ -193,8 +140,6 @@ public class PlayerShadowController : MonoBehaviour
                 return;
             }
         }
-        
-        GameLogger.Log($"PlayerShadow: 使用 PathRecorder 实例ID: {pathRecorder.GetInstanceID()}, 路径长度: {pathRecorder.GetMaxPathLength()}", "PlayerShadow");
 
         // 复制路径记录器中的最远路径
         CopyShadowSequenceFromPathRecorder();
@@ -245,29 +190,9 @@ public class PlayerShadowController : MonoBehaviour
     {
         shadowSequence.Clear();
         
-        if (pathRecorder == null)
-        {
-            GameLogger.LogError("PlayerShadow: pathRecorder 为 null，无法复制路径！", "PlayerShadow");
-            return;
-        }
-
-        GameLogger.Log($"PlayerShadow: 开始复制路径，PathRecorder 实例ID: {pathRecorder.GetInstanceID()}, IsPersistent: {pathRecorder.IsPersistent}", "PlayerShadow");
+        if (pathRecorder == null) return;
 
         List<PlayerAction> maxPath = pathRecorder.GetMaxPath();
-        
-        GameLogger.Log($"PlayerShadow: GetMaxPath() 返回的路径长度: {maxPath.Count}", "PlayerShadow");
-        
-        // 打印源路径内容（调试用）
-        if (maxPath.Count > 0)
-        {
-            string pathString = "源路径内容：";
-            for (int i = 0; i < maxPath.Count; i++)
-            {
-                pathString += $"[{i}]{maxPath[i].attackType}";
-                if (i < maxPath.Count - 1) pathString += " → ";
-            }
-            GameLogger.Log(pathString, "PlayerShadow");
-        }
         
         // 深拷贝路径数据
         foreach (var action in maxPath)
@@ -279,19 +204,21 @@ public class PlayerShadowController : MonoBehaviour
             });
         }
         
-        // 打印复制后的路径（验证）
+        // 输出复制后的路径（方便调试）
         if (shadowSequence.Count > 0)
         {
-            string copiedPathString = "复制后的路径：";
+            string pathString = "获取更新后的最远路径：";
             for (int i = 0; i < shadowSequence.Count; i++)
             {
-                copiedPathString += $"[{i}]{shadowSequence[i].attackType}";
-                if (i < shadowSequence.Count - 1) copiedPathString += " → ";
+                pathString += $"[{i}]{shadowSequence[i].attackType}";
+                if (i < shadowSequence.Count - 1) pathString += " → ";
             }
-            GameLogger.Log(copiedPathString, "PlayerShadow");
+            GameLogger.Log(pathString, "PlayerShadow");
         }
-        
-        GameLogger.Log($"PlayerShadow: ✅ 复制路径成功，共 {shadowSequence.Count} 个动作", "PlayerShadow");
+        else
+        {
+            GameLogger.Log("获取更新后的最远路径：空", "PlayerShadow");
+        }
     }
 
     /// <summary>
