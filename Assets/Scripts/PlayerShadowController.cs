@@ -24,8 +24,18 @@ using System.Collections.Generic;
 public class PlayerShadowController : MonoBehaviour
 {
     /// <summary>
+    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：玩家路径记录器（请在Inspector中拖拽赋值）")]
+    public PlayerPathRecorder pathRecorder;
+
+    /// <summary>
     /// 动画绑定（需要与Player的动画保持一致）
     /// </summary>
+    [Space(10)]
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
     public AnimationClip idleAnimation;
@@ -43,8 +53,6 @@ public class PlayerShadowController : MonoBehaviour
     /// 影子配置
     /// </summary>
     [Header("影子配置")]
-    [Tooltip("玩家路径记录器（必须赋值）")]
-    public PlayerPathRecorder pathRecorder;
     
     [Tooltip("影子提前播放的时间（秒）。1表示影子比实际游戏提前1秒执行动作")]
     public float leadTime = 1f;

@@ -74,7 +74,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Sprite: {fileID: 972329716, guid: 42140d1b790558745883d98f4e7c234d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -119,11 +119,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13e1c2dbe90d6514daf51c0749418a5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pathRecorder: {fileID: 0}
   idleAnimation: {fileID: 7400000, guid: 2e6f49891de762b4a9a381d04a86878e, type: 2}
   attackXAnimation: {fileID: 7400000, guid: 6c0a38417eca5bb46b482d9770c7daf0, type: 2}
   attackYAnimation: {fileID: 7400000, guid: 0feb37960379a9646b7e0d55f77474b5, type: 2}
   attackBAnimation: {fileID: 7400000, guid: 2ee80bc2396fd64469f0bf106c229a89, type: 2}
-  pathRecorder: {fileID: 0}
   leadTime: 1
   actionDuration: 1
   actionInterval: 1

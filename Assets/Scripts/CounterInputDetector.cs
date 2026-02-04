@@ -7,6 +7,13 @@ using UnityEngine;
 /// </summary>
 public class CounterInputDetector : MonoBehaviour
 {
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 可选配置 ⚠️")]
+    [Space(5)]
+    [Tooltip("可选：显示反制提示的UI对象（请在Inspector中拖拽赋值）")]
+    public GameObject counterPromptUI;
+
+    [Space(10)]
     [Header("反制设置")]
     [Tooltip("反制成功时的奖励伤害倍数")]
     public float counterDamageMultiplier = 2f;
@@ -30,10 +37,6 @@ public class CounterInputDetector : MonoBehaviour
     [SerializeField] private bool isWaitingForInput = false;
     [SerializeField] private bool isInvincible = false;
     private float invincibilityEndTime = 0f;
-
-    [Header("UI反馈（可选）")]
-    [Tooltip("显示反制提示的UI对象")]
-    public GameObject counterPromptUI;
 
     void Update()
     {

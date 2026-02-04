@@ -23,8 +23,18 @@ using System.Collections.Generic;
 public class BossShadowController : MonoBehaviour
 {
     /// <summary>
+    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：跟随的Boss控制器（请在Inspector中拖拽赋值）")]
+    public BossController bossController;
+
+    /// <summary>
     /// 动画绑定（需要与Boss的动画保持一致）
     /// </summary>
+    [Space(10)]
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
     public AnimationClip idleAnimation;
@@ -42,8 +52,6 @@ public class BossShadowController : MonoBehaviour
     /// 影子配置
     /// </summary>
     [Header("影子配置")]
-    [Tooltip("跟随的Boss控制器（必须赋值）")]
-    public BossController bossController;
     
     [Tooltip("影子提前播放的时间（秒）。1表示影子比Boss提前1秒执行动作")]
     public float leadTime = 1f;

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 
 public class UIManager : MonoBehaviour
 {
@@ -18,6 +19,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float waitAfterOpening = 0f;
     [SerializeField] private float waitBeforeBeginning = 0f;
     [SerializeField] private float waitAfterBeginning = 0f;
+    
+    [Header("Events")]
+    [Tooltip("入场动画播放完成后触发的事件")]
+    public UnityEvent onAnimationComplete;
     
     private bool isFirstLaunch = true;
     
@@ -97,11 +102,21 @@ public class UIManager : MonoBehaviour
         // 播放Beginning动画
         PlayBeginningAnimation();
         
+        // 等待Beginning动画播放完毕
+        if (beginningAnimation != null)
+        {
+            yield return new WaitForSeconds(GetAnimationLength(beginningAnimation, beginningAnimationName));
+        }
+        
         // 等待Beginning动画后的等待时间
         yield return new WaitForSeconds(waitAfterBeginning);
         
         // 标记不再是第一次启动
         isFirstLaunch = false;
+        
+        // 触发动画完成事件，通知GameManager显示UI
+        onAnimationComplete?.Invoke();
+        GameLogger.Log("UIManager: 入场动画播放完成，通知GameManager显示UI", "UIManager");
     }
     
     private float GetAnimationLength(Animation animation, string animationName)

@@ -10,8 +10,27 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
+    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
+    public HPBar hpBar;
+    
+    [Tooltip("⚠️ 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
+    public BossController bossController;
+    
+    [Tooltip("⚠️ 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    public PlayerPathRecorder pathRecorder;
+    
+    [Tooltip("可选：玩家影子控制器（用于影子系统）")]
+    public PlayerShadowController shadowController;
+
+    /// <summary>
     /// 动画绑定
     /// </summary>
+    [Space(10)]
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
     public AnimationClip idleAnimation;
@@ -41,19 +60,6 @@ public class PlayerController : MonoBehaviour
     [Header("运行时状态")]
     [Tooltip("当前生命值（运行时动态计算，不保存）")]
     private float currentHealth;
-    
-    [Header("场景对象引用")]
-    [Tooltip("玩家血条UI（请在Inspector中拖拽赋值）")]
-    public HPBar hpBar;
-    
-    [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
-    public BossController bossController;
-    
-    [Tooltip("玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
-    public PlayerPathRecorder pathRecorder;
-    
-    [Tooltip("玩家影子控制器（可选，用于影子系统）")]
-    public PlayerShadowController shadowController;
     
     [Header("调试选项")]
     [Tooltip("启用自动反制（用于调试测试，勾选后会自动执行正确的反制动作）")]

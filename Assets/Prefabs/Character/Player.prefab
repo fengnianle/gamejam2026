@@ -76,7 +76,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Sprite: {fileID: 972329716, guid: 42140d1b790558745883d98f4e7c234d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -121,14 +121,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3de94c87c0ab1e45aa3dcc4e9b4740b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hpBar: {fileID: 0}
+  bossController: {fileID: 0}
+  pathRecorder: {fileID: 0}
+  shadowController: {fileID: 0}
   idleAnimation: {fileID: 7400000, guid: 4b705ff8089eb574a8d6751244efc62b, type: 2}
   attackXAnimation: {fileID: 7400000, guid: b5b5662ccc1c0524f91fa13e1ca56488, type: 2}
   attackYAnimation: {fileID: 7400000, guid: 03d635ca360179a4caef5793211a1631, type: 2}
   attackBAnimation: {fileID: 7400000, guid: cc48c8d64d7c8ac41b91ac183bdc67e2, type: 2}
   deathAnimation: {fileID: 7400000, guid: 1e9292f2bf27df3459101656cc6ae005, type: 2}
   characterStats: {fileID: 11400000, guid: 51f838c321322074281a04f3e957310a, type: 2}
-  hpBar: {fileID: 0}
-  bossController: {fileID: 0}
   autoCounterEnabled: 0
 --- !u!114 &5456741115189411642
 MonoBehaviour:
@@ -174,6 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a574df2a6a446645bfedacfde5d4bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  counterPromptUI: {fileID: 0}
   counterDamageMultiplier: 2
   invincibilityTime: 0.5
   counterAttack1Key: 113
@@ -183,4 +186,3 @@ MonoBehaviour:
   expectedAttackType: 0
   isWaitingForInput: 1
   isInvincible: 0
-  counterPromptUI: {fileID: 0}

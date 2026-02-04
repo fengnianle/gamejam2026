@@ -17,41 +17,55 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     /// <summary>
+    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：UI管理器（请在Inspector中拖拽赋值）")]
+    public UIManager uiManager;
+    
+    [Tooltip("⚠️ 必须赋值：玩家控制器（请在Inspector中拖拽赋值）")]
+    public PlayerController playerController;
+    
+    [Tooltip("⚠️ 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
+    public BossController bossController;
+    
+    [Tooltip("⚠️ 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    public PlayerPathRecorder pathRecorder;
+    
+    [Tooltip("可选：玩家影子控制器（用于影子系统）")]
+    public PlayerShadowController playerShadowController;
+
+    /// <summary>
+    /// UI元素引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ UI元素引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：开始游戏按钮（请在Inspector中拖拽赋值）")]
+    public GameObject startButton;
+    
+    [Tooltip("⚠️ 必须赋值：重新开始按钮（玩家失败时显示，请在Inspector中拖拽赋值）")]
+    public GameObject restartButton;
+    
+    [Tooltip("⚠️ 必须赋值：结束游戏按钮（游戏结束时显示，请在Inspector中拖拽赋值）")]
+    public GameObject endButton;
+    
+    [Tooltip("⚠️ 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
+    public GameObject playerHPBar;
+    
+    [Tooltip("⚠️ 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
+    public GameObject bossHPBar;
+
+    /// <summary>
     /// 游戏状态
     /// </summary>
+    [Space(10)]
     [Header("游戏状态")]
     [Tooltip("当前游戏状态（仅供调试查看）")]
     [SerializeField]
     private GameState currentState = GameState.MainMenu;
-    
-    /// <summary>
-    /// 场景对象引用
-    /// </summary>
-    [Header("场景对象引用")]
-    [Tooltip("玩家控制器（请在Inspector中拖拽赋值）")]
-    public PlayerController playerController;
-    
-    [Tooltip("Boss控制器（请在Inspector中拖拽赋值）")]
-    public BossController bossController;
-    
-    [Tooltip("玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
-    public PlayerPathRecorder pathRecorder;
-    
-    [Tooltip("玩家影子控制器（可选，用于影子系统）")]
-    public PlayerShadowController playerShadowController;
-
-    /// <summary>
-    /// UI引用
-    /// </summary>
-    [Header("UI引用")]
-    [Tooltip("开始游戏按钮（请在Inspector中拖拽赋值）")]
-    public GameObject startButton;
-    
-    [Tooltip("重新开始按钮（玩家失败时显示，请在Inspector中拖拽赋值）")]
-    public GameObject restartButton;
-    
-    [Tooltip("结束游戏按钮（游戏结束时显示，请在Inspector中拖拽赋值）")]
-    public GameObject endButton;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -66,10 +80,12 @@ public class GameManager : MonoBehaviour
         
         Instance = this;
         
-        // 初始化UI状态
+        // 初始化UI状态（隐藏所有UI，等待动画完成）
         InitializeUIState();
         // 绑定按钮事件
         RegisterButtonEvents();
+        // 注册UIManager的动画完成回调
+        RegisterUIManagerCallback();
     }
 
     void OnDestroy()
@@ -84,8 +100,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // 游戏启动时进入主菜单状态
-        ChangeState(GameState.MainMenu);
+        // 游戏启动时不立即进入主菜单，等待UIManager的入场动画播放完成
+        // 动画完成后会通过OnAnimationComplete回调显示UI
+        // 此时保持currentState为MainMenu（Awake中已初始化）
+        GameLogger.Log("GameManager启动，等待入场动画播放完成", "GameManager");
     }
 
     /// <summary> ----------------------------------------- 公共方法 ----------------------------------------- </summary>
@@ -215,6 +233,45 @@ public class GameManager : MonoBehaviour
 
     /// <summary> ----------------------------------------- 私有方法 ----------------------------------------- </summary>
     /// <summary>
+    /// 注册UIManager的动画完成回调
+    /// </summary>
+    void RegisterUIManagerCallback()
+    {
+        if (uiManager != null)
+        {
+            // 注册动画完成回调
+            uiManager.onAnimationComplete.AddListener(OnAnimationComplete);
+            GameLogger.Log("已注册UIManager的动画完成回调", "GameManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("UIManager未赋值，将跳过入场动画，直接显示UI", "GameManager");
+            // 如果没有UIManager，直接显示UI
+            OnAnimationComplete();
+        }
+    }
+    
+    /// <summary>
+    /// 入场动画播放完成的回调
+    /// 显示主菜单UI（Start按钮和血条）
+    /// </summary>
+    void OnAnimationComplete()
+    {
+        GameLogger.Log("入场动画播放完成，显示主菜单UI", "GameManager");
+        
+        // 显示Start按钮
+        SetUIActive(startButton, true);
+        
+        // 显示血条
+        SetUIActive(playerHPBar, true);
+        SetUIActive(bossHPBar, true);
+        
+        // 确保Restart和End按钮隐藏
+        SetUIActive(restartButton, false);
+        SetUIActive(endButton, false);
+    }
+    
+    /// <summary>
     /// 注册按钮事件（解决场景重载后按钮引用失效的问题）
     /// </summary>
     public void RegisterButtonEvents()
@@ -249,15 +306,20 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// 初始化UI状态（在Awake中调用，确保启动时UI正确）
+    /// 初始时隐藏所有UI，等待入场动画播放完成后再显示
     /// </summary>
     void InitializeUIState()
     {
-        // 只显示开始游戏按钮，隐藏其他按钮
-        SetUIActive(startButton, true);
+        // 隐藏所有按钮（等待入场动画完成）
+        SetUIActive(startButton, false);
         SetUIActive(restartButton, false);
         SetUIActive(endButton, false);
         
-        GameLogger.Log("UI初始状态设置完成", "GameManager");
+        // 隐藏血条（等待入场动画完成）
+        SetUIActive(playerHPBar, false);
+        SetUIActive(bossHPBar, false);
+        
+        GameLogger.Log("UI初始状态设置完成（所有UI已隐藏，等待入场动画）", "GameManager");
     }
     
     /// <summary>

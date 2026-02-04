@@ -10,8 +10,21 @@ using System.Collections.Generic;
 public class BossController : MonoBehaviour
 {
     /// <summary>
+    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// </summary>
+    [Space(10)]
+    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Space(5)]
+    [Tooltip("⚠️ 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
+    public HPBar hpBar;
+    
+    [Tooltip("可选：Boss的影子控制器（用于预判系统）")]
+    public BossShadowController shadowController;
+
+    /// <summary>
     /// 动画绑定
     /// </summary>
+    [Space(10)]
     [Header("动画绑定")]
     [Tooltip("待机动画片段")]
     public AnimationClip idleAnimation;
@@ -42,13 +55,6 @@ public class BossController : MonoBehaviour
     [Tooltip("当前生命值（运行时动态计算，不保存）")]
     [System.NonSerialized]
     public float currentHealth;
-    
-    [Header("场景对象引用")]
-    [Tooltip("Boss血条UI（请在Inspector中拖拽赋值）")]
-    public HPBar hpBar;
-    
-    [Tooltip("Boss的影子控制器（可选，用于预判系统）")]
-    public BossShadowController shadowController;
 
     /// <summary>
     /// 动作序列系统
@@ -66,9 +72,6 @@ public class BossController : MonoBehaviour
     
     [Tooltip("是否循环播放动作序列")]
     public bool loopSequence = true;
-    
-    [Tooltip("是否自动开始播放（建议由GameManager控制）")]
-    public bool autoStart = false;
     
     [Tooltip("动作之间的间隔时间（秒）")]
     public float actionInterval = 1f;
@@ -141,26 +144,10 @@ public class BossController : MonoBehaviour
             actionSequence.Add(new BossAction { actionType = BossActionType.Idle, duration = 2f });
         }
 
-        // 自动开始
-        if (autoStart)
-        {
-            StartSequence();
-        }
-        else
-        {
-            // 检查GameManager状态，如果已经Playing则不调用ForcePlayIdle
-            // （Restart后会直接进入Playing状态，GameManager会调用StartSequence）
-            if (GameManager.Instance != null && GameManager.Instance.IsPlaying())
-            {
-                GameLogger.Log("Boss Start: 检测到游戏已在Playing状态，等待GameManager启动序列", "Boss");
-                // 不调用ForcePlayIdle，等待GameManager的OnEnterPlaying调用StartSequence
-            }
-            else
-            {
-                // 如果不自动开始，确俚Boss处于Idle状态
-                ForcePlayIdle();
-            }
-        }
+        // Boss的启动完全由GameManager控制
+        // 初始状态：播放Idle动画，等待GameManager调用StartSequence()
+        ForcePlayIdle();
+        GameLogger.Log("Boss初始化完成，等待GameManager启动序列", "Boss");
     }
 
     void Update()

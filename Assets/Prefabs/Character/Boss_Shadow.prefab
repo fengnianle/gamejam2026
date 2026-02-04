@@ -74,7 +74,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Sprite: {fileID: 1279844938, guid: 354c1db9a5e6cc048807c91acc530821, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -119,10 +119,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bafd793ebdbdb6643bd40145cca34945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bossController: {fileID: 0}
   idleAnimation: {fileID: 7400000, guid: 17abdbf641bd0a24f8e6d69348080e42, type: 2}
   attackXAnimation: {fileID: 7400000, guid: ce18d4b545335f949a64415b0d89d6b8, type: 2}
   attackYAnimation: {fileID: 7400000, guid: 591ded5eeff05fc4f8f7220c9c036cfc, type: 2}
   attackBAnimation: {fileID: 7400000, guid: 99f34c752d036cd47bde4eab97889f60, type: 2}
-  bossController: {fileID: 0}
   leadTime: 1
   autoFollow: 1
