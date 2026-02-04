@@ -183,6 +183,61 @@ public class BossController : MonoBehaviour
 
     /// <summary> ----------------------------------------- Public ----------------------------------------- </summary>
     /// <summary>
+    /// 重置Boss状态（由GameManager调用，用于Restart/EndGame）
+    /// </summary>
+    public void ResetState()
+    {
+        GameLogger.Log("重置Boss状态", "BossController");
+        
+        // 重新启用组件（死亡时会被禁用）
+        enabled = true;
+        
+        // 恢复animator速度（如果死亡时被修改）
+        if (animator != null)
+        {
+            animator.speed = 1f;
+        }
+        
+        // 取消所有延迟调用
+        CancelInvoke();
+        
+        // 重置状态标记
+        isPlaying = false;
+        isPerformingAction = false;
+        currentActionIndex = 0;
+        actionTimer = 0f;
+        
+        // 重置生命值
+        if (characterStats != null)
+        {
+            currentHealth = characterStats.maxHealth;
+            
+            // 更新血条显示
+            if (hpBar != null)
+            {
+                hpBar.SetHP(currentHealth, characterStats.maxHealth);
+            }
+        }
+        
+        // 重置动画状态
+        ForcePlayIdle();
+        
+        // 重置攻击窗口
+        if (attackWindow != null)
+        {
+            attackWindow.EndWindow(); // 确保关闭任何打开的窗口
+        }
+        
+        // 重置影子控制器
+        if (shadowController != null)
+        {
+            shadowController.ResetState();
+        }
+        
+        GameLogger.Log("Boss状态重置完成", "BossController");
+    }
+    
+    /// <summary>
     /// 添加新动作到序列末尾
     /// </summary>
     // public void AddAction(BossActionType actionType, float duration)
