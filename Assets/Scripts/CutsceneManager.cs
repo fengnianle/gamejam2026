@@ -104,6 +104,9 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放开场演出", "CutsceneManager");
         
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
+        
         if (cutsceneAnimator != null)
         {
             isPlayingCutscene = true;
@@ -204,6 +207,9 @@ public class CutsceneManager : MonoBehaviour
         
         isPlayingCutscene = false;
         
+        // 重新启用Player和Boss的Animator
+        EnableCharacterAnimators();
+        
         // 通知GameManager开场演出已完成，可以开始比赛
         if (GameManager.Instance != null)
         {
@@ -276,6 +282,58 @@ public class CutsceneManager : MonoBehaviour
     }
 
     /// <summary> ----------------------------------------- 辅助方法 ----------------------------------------- </summary>
+    /// <summary>
+    /// 禁用角色Animator（在播放演出时避免角色自身动画干扰）
+    /// </summary>
+    void DisableCharacterAnimators()
+    {
+        if (playerObject != null)
+        {
+            Animator playerAnimator = playerObject.GetComponent<Animator>();
+            if (playerAnimator != null)
+            {
+                playerAnimator.enabled = false;
+                GameLogger.Log("CutsceneManager: 已禁用Player Animator", "CutsceneManager");
+            }
+        }
+        
+        if (bossObject != null)
+        {
+            Animator bossAnimator = bossObject.GetComponent<Animator>();
+            if (bossAnimator != null)
+            {
+                bossAnimator.enabled = false;
+                GameLogger.Log("CutsceneManager: 已禁用Boss Animator", "CutsceneManager");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 启用角色Animator（演出结束后恢复角色动画）
+    /// </summary>
+    void EnableCharacterAnimators()
+    {
+        if (playerObject != null)
+        {
+            Animator playerAnimator = playerObject.GetComponent<Animator>();
+            if (playerAnimator != null)
+            {
+                playerAnimator.enabled = true;
+                GameLogger.Log("CutsceneManager: 已启用Player Animator", "CutsceneManager");
+            }
+        }
+        
+        if (bossObject != null)
+        {
+            Animator bossAnimator = bossObject.GetComponent<Animator>();
+            if (bossAnimator != null)
+            {
+                bossAnimator.enabled = true;
+                GameLogger.Log("CutsceneManager: 已启用Boss Animator", "CutsceneManager");
+            }
+        }
+    }
+    
     /// <summary>
     /// 重置角色位置到初始位置
     /// 由GameManager在ResetGameState时调用

@@ -922,6 +922,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boss
       objectReference: {fileID: 0}
+    - target: {fileID: 7144528105576166485, guid: 8fcd1276cb27cf14381848700de4bfe5, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7144528105576166485, guid: 8fcd1276cb27cf14381848700de4bfe5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1451,7 +1459,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3849128387304351673, guid: b4b45ddebc0398f41a9e6ed4ae41f94e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.9
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 3849128387304351673, guid: b4b45ddebc0398f41a9e6ed4ae41f94e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2289,13 +2297,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boss_Shadow
       objectReference: {fileID: 0}
+    - target: {fileID: 1092948837799117327, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1092948837799117327, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5412590040385146824, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.42
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5412590040385146824, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.3
+      value: -0.333
       objectReference: {fileID: 0}
     - target: {fileID: 5412590040385146824, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3277,11 +3293,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 234737889129486529, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.31
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 234737889129486529, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.25
+      value: 0.22
       objectReference: {fileID: 0}
     - target: {fileID: 234737889129486529, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3318,6 +3334,14 @@ PrefabInstance:
     - target: {fileID: 3303077587732675872, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
       propertyPath: m_Name
       value: Player_Shadow
+      objectReference: {fileID: 0}
+    - target: {fileID: 3303077587732675872, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3303077587732675872, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8220899974471398045, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
       propertyPath: pathRecorder
@@ -3496,8 +3520,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.06435, y: -0.029250026, z: 0}
-    m_Extent: {x: 1.30625, y: 3.9211502, z: 0}
+    m_Center: {x: -1.0638, y: -0.033199906, z: 0}
+    m_Extent: {x: 1.3066, y: 3.9144, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -4943,6 +4967,7 @@ MonoBehaviour:
   bossObject: {fileID: 268813935}
   playerInitialPositionX: -7
   bossInitialPositionX: 7
+  initialPositionState: InitialPosition
   openingCutsceneState: OpeningCutscene
   gameStartCutsceneState: GameStart
   restartCutsceneState: Restart
@@ -5240,8 +5265,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.3503001, y: 0.5291501, z: 0}
-    m_Extent: {x: 1.1197, y: 3.9274502, z: 0}
+    m_Center: {x: -1.3495, y: 0.53125, z: 0}
+    m_Extent: {x: 1.122, y: 3.91745, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -6209,6 +6234,14 @@ PrefabInstance:
     - target: {fileID: 2433926499248065953, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
       propertyPath: m_Name
       value: Main Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 5604587766561790141, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 247
+      objectReference: {fileID: 0}
+    - target: {fileID: 7512342462868675665, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 807
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
