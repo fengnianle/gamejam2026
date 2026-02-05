@@ -31,6 +31,12 @@ public class CutsceneManager : MonoBehaviour
     
     [Tooltip("[!] 必须赋值：Boss对象（用于演出中的移动等操作，请在Inspector中拖拽赋值）")]
     public GameObject bossObject;
+    
+    [Tooltip("可选：Player Shadow对象（用于演出中同步控制Shadow的Animator）")]
+    public GameObject playerShadowObject;
+    
+    [Tooltip("可选：Boss Shadow对象（用于演出中同步控制Shadow的Animator）")]
+    public GameObject bossShadowObject;
 
     /// <summary>
     /// 初始位置配置
@@ -325,6 +331,7 @@ public class CutsceneManager : MonoBehaviour
     /// </summary>
     void DisableCharacterAnimators()
     {
+        // 禁用Player Animator
         if (playerObject != null)
         {
             Animator playerAnimator = playerObject.GetComponent<Animator>();
@@ -335,6 +342,7 @@ public class CutsceneManager : MonoBehaviour
             }
         }
         
+        // 禁用Boss Animator
         if (bossObject != null)
         {
             Animator bossAnimator = bossObject.GetComponent<Animator>();
@@ -344,6 +352,28 @@ public class CutsceneManager : MonoBehaviour
                 GameLogger.Log("CutsceneManager: 已禁用Boss Animator", "CutsceneManager");
             }
         }
+        
+        // 禁用Player Shadow Animator
+        if (playerShadowObject != null)
+        {
+            Animator playerShadowAnimator = playerShadowObject.GetComponent<Animator>();
+            if (playerShadowAnimator != null)
+            {
+                playerShadowAnimator.enabled = false;
+                GameLogger.Log("CutsceneManager: 已禁用Player Shadow Animator", "CutsceneManager");
+            }
+        }
+        
+        // 禁用Boss Shadow Animator
+        if (bossShadowObject != null)
+        {
+            Animator bossShadowAnimator = bossShadowObject.GetComponent<Animator>();
+            if (bossShadowAnimator != null)
+            {
+                bossShadowAnimator.enabled = false;
+                GameLogger.Log("CutsceneManager: 已禁用Boss Shadow Animator", "CutsceneManager");
+            }
+        }
     }
     
     /// <summary>
@@ -351,6 +381,7 @@ public class CutsceneManager : MonoBehaviour
     /// </summary>
     void EnableCharacterAnimators()
     {
+        // 启用Player Animator
         if (playerObject != null)
         {
             Animator playerAnimator = playerObject.GetComponent<Animator>();
@@ -361,6 +392,7 @@ public class CutsceneManager : MonoBehaviour
             }
         }
         
+        // 启用Boss Animator
         if (bossObject != null)
         {
             Animator bossAnimator = bossObject.GetComponent<Animator>();
@@ -368,6 +400,28 @@ public class CutsceneManager : MonoBehaviour
             {
                 bossAnimator.enabled = true;
                 GameLogger.Log("CutsceneManager: 已启用Boss Animator", "CutsceneManager");
+            }
+        }
+        
+        // 启用Player Shadow Animator
+        if (playerShadowObject != null)
+        {
+            Animator playerShadowAnimator = playerShadowObject.GetComponent<Animator>();
+            if (playerShadowAnimator != null)
+            {
+                playerShadowAnimator.enabled = true;
+                GameLogger.Log("CutsceneManager: 已启用Player Shadow Animator", "CutsceneManager");
+            }
+        }
+        
+        // 启用Boss Shadow Animator
+        if (bossShadowObject != null)
+        {
+            Animator bossShadowAnimator = bossShadowObject.GetComponent<Animator>();
+            if (bossShadowAnimator != null)
+            {
+                bossShadowAnimator.enabled = true;
+                GameLogger.Log("CutsceneManager: 已启用Boss Shadow Animator", "CutsceneManager");
             }
         }
     }

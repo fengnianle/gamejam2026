@@ -1711,6 +1711,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3438617185227148228, guid: 080170e550ed78440829647a67e4df5a, type: 3}
   m_PrefabInstance: {fileID: 794993861}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &833698147 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3303077587732675872, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
+  m_PrefabInstance: {fileID: 1341010924}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &860454601
 GameObject:
   m_ObjectHideFlags: 0
@@ -2408,7 +2413,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8777206741019964114, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
   m_PrefabInstance: {fileID: 957493431}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1660332197}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bafd793ebdbdb6643bd40145cca34945, type: 3}
@@ -3411,7 +3416,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8220899974471398045, guid: 14d805170447cb347b9bb89d5c5197b1, type: 3}
   m_PrefabInstance: {fileID: 1341010924}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 833698147}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 13e1c2dbe90d6514daf51c0749418a5a, type: 3}
@@ -3574,8 +3579,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.05785, y: -0.041749954, z: 0}
-    m_Extent: {x: 1.30835, y: 3.91955, z: 0}
+    m_Center: {x: -1.06395, y: -0.037750006, z: 0}
+    m_Extent: {x: 1.30605, y: 3.92115, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -4617,6 +4622,11 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1660332197 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1092948837799117327, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
+  m_PrefabInstance: {fileID: 957493431}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1660332200 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5412590040385146824, guid: 5f6ffe74fceb5364cada836b9f28f409, type: 3}
@@ -5019,6 +5029,8 @@ MonoBehaviour:
   cutsceneAnimator: {fileID: 1880879373}
   playerObject: {fileID: 637409372}
   bossObject: {fileID: 268813935}
+  playerShadowObject: {fileID: 833698147}
+  bossShadowObject: {fileID: 1660332197}
   playerInitialPositionX: -7
   bossInitialPositionX: 7
   initialPositionState: InitialPosition
@@ -5319,8 +5331,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.35605, y: 0.52674997, z: 0}
-    m_Extent: {x: 1.12745, y: 3.9292498, z: 0}
+    m_Center: {x: -1.3518, y: 0.5330001, z: 0}
+    m_Extent: {x: 1.1241, y: 3.9243002, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
