@@ -517,6 +517,68 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2140817576695187381, guid: 69e28c30ed612e14a8ec561d54751fd2, type: 3}
   m_PrefabInstance: {fileID: 113939082}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &115389232
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115389233}
+  - component: {fileID: 115389234}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &115389233
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115389232}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.029299736, y: 2.355, z: -13.45}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &115389234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115389232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e711070ad86534e8970d43786274cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bgmSource: {fileID: 0}
+  sfxSource: {fileID: 0}
+  backgroundSource: {fileID: 0}
+  logoAppearSFX: {fileID: 0}
+  drumHitSFX: {fileID: 8300000, guid: 003ea7c6419f24548ac89ad2c3d2bf3c, type: 3}
+  samuraiDashSFX: {fileID: 0}
+  swordClash1SFX: {fileID: 8300000, guid: 956fdf1b8553d284c84035b515937210, type: 3}
+  swordClash2SFX: {fileID: 8300000, guid: 917a1f6565ab65748b28d0a965dddace, type: 3}
+  swordClash3SFX: {fileID: 8300000, guid: f98b44e6d5cfbcc4e84e1dac0a8be9c2, type: 3}
+  japaneseDrumSFX: {fileID: 8300000, guid: 7f7184b14f28f8648a11eaca9106a4b0, type: 3}
+  swordUnsheathSFX: {fileID: 8300000, guid: 0ebf98ccffd76874da7d648109b7a64e, type: 3}
+  heavyDrumSFX: {fileID: 8300000, guid: c33a03c7c9ec5bc4a82c837eeefe582a, type: 3}
+  hurtSFX: {fileID: 8300000, guid: ee18bd1675e01764ab0d540beee5a24b, type: 3}
+  gameBGM: {fileID: 8300000, guid: 7e123dc6552affe4b94f2dc9266c0fee, type: 3}
+  forestWindBG: {fileID: 8300000, guid: dc282e3cccb9da540b23eedbf45785ed, type: 3}
+  bgmVolume: 0.6
+  sfxVolume: 0.9
+  backgroundVolume: 1
 --- !u!1 &161782626
 GameObject:
   m_ObjectHideFlags: 0
@@ -2933,8 +2995,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.0654, y: -0.030900002, z: 0}
-    m_Extent: {x: 1.3003999, y: 3.915, z: 0}
+    m_Center: {x: -1.0546, y: -0.029450059, z: 0}
+    m_Extent: {x: 1.3065, y: 3.9172502, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -4798,8 +4860,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.3544, y: 0.52094996, z: 0}
-    m_Extent: {x: 1.1253, y: 3.9253502, z: 0}
+    m_Center: {x: -1.34455, y: 0.53549993, z: 0}
+    m_Extent: {x: 1.1313499, y: 3.9242997, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -5962,3 +6024,4 @@ SceneRoots:
   - {fileID: 2045728615912347551}
   - {fileID: 8895051764878479984}
   - {fileID: 1150015803}
+  - {fileID: 115389233}
