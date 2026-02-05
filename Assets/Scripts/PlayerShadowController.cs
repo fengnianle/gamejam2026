@@ -284,6 +284,12 @@ public class PlayerShadowController : MonoBehaviour
         {
             GameLogger.Log("PlayerShadow: 影子序列播放完成", "PlayerShadow");
             StopShadowSequence();
+            
+            // 【关键】通知GameManager更新相机观测层级（切换回Player层）
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.UpdateShadowCameraLayers();
+            }
             return;
         }
 
@@ -368,6 +374,37 @@ public class PlayerShadowController : MonoBehaviour
         {
             animator.Play(idleAnimation.name);
         }
+    }
+
+    /// <summary>
+    /// 【公共接口】检查影子是否正在播放序列
+    /// </summary>
+    public bool IsPlaying()
+    {
+        return isPlaying;
+    }
+
+    /// <summary>
+    /// 【公共接口】检查影子序列是否已播放完成
+    /// 返回true表示：有序列数据但已经全部播放完毕
+    /// 返回false表示：无序列数据，或者还在播放中
+    /// </summary>
+    public bool HasCompletedSequence()
+    {
+        // 如果没有序列数据，返回false（无需播放影子）
+        if (shadowSequence == null || shadowSequence.Count == 0)
+        {
+            return false;
+        }
+        
+        // 如果还在播放中，返回false
+        if (isPlaying)
+        {
+            return false;
+        }
+        
+        // 如果曾经播放过（currentActionIndex到达末尾），返回true
+        return currentActionIndex >= shadowSequence.Count;
     }
 
     /// <summary>

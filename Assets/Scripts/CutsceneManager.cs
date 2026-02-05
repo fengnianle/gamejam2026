@@ -104,6 +104,13 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放开场演出", "CutsceneManager");
         
+        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
+        }
+        
         // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
         DisableCharacterAnimators();
         
@@ -127,6 +134,13 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放比赛开始演出", "CutsceneManager");
         
+        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
+        }
+        
         if (cutsceneAnimator != null)
         {
             isPlayingCutscene = true;
@@ -145,6 +159,13 @@ public class CutsceneManager : MonoBehaviour
     public void PlayRestartCutscene()
     {
         GameLogger.Log("CutsceneManager: 开始播放重新开始演出", "CutsceneManager");
+        
+        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
+        }
         
         if (cutsceneAnimator != null)
         {
@@ -165,6 +186,13 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放胜利演出", "CutsceneManager");
         
+        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
+        }
+        
         if (cutsceneAnimator != null)
         {
             isPlayingCutscene = true;
@@ -183,6 +211,13 @@ public class CutsceneManager : MonoBehaviour
     public void PlayDefeatCutscene()
     {
         GameLogger.Log("CutsceneManager: 开始播放失败演出", "CutsceneManager");
+        
+        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
+        }
         
         if (cutsceneAnimator != null)
         {

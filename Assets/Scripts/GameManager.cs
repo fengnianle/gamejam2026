@@ -39,6 +39,9 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("可选：玩家影子控制器（用于影子系统）")]
     public PlayerShadowController playerShadowController;
+    
+    [Tooltip("可选：Boss影子控制器（用于影子系统）")]
+    public BossShadowController bossShadowController;
 
     /// <summary>
     /// UI元素引用
@@ -51,6 +54,15 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("[!] 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
     public GameObject bossHPBar;
+    
+    /// <summary>
+    /// 幻影相机引用
+    /// </summary>
+    [Space(10)]
+    [Header("[!] 幻影相机引用 - 必须手动拖拽赋值 [!]")]
+    [Space(5)]
+    [Tooltip("[!] 必须赋值：幻影相机（用于观察影子系统，请在Inspector中拖拽赋值）")]
+    public Camera shadowCamera;
 
     /// <summary>
     /// 游戏状态
@@ -60,6 +72,29 @@ public class GameManager : MonoBehaviour
     [Tooltip("当前游戏状态（仅供调试查看）")]
     [SerializeField]
     private GameState currentState = GameState.MainMenu;
+    
+    /// <summary>
+    /// 相机观测层级配置
+    /// </summary>
+    [Space(10)]
+    [Header("相机层级配置")]
+    [Tooltip("Player层的LayerMask")]
+    public LayerMask playerLayer;
+    
+    [Tooltip("PlayerShadow层的LayerMask")]
+    public LayerMask playerShadowLayer;
+    
+    [Tooltip("Boss层的LayerMask")]
+    public LayerMask bossLayer;
+    
+    [Tooltip("BossShadow层的LayerMask")]
+    public LayerMask bossShadowLayer;
+    
+    [Tooltip("默认观测层（包含Player和Boss）")]
+    public LayerMask defaultLayer;
+    
+    [Tooltip("影子观测层（包含PlayerShadow和BossShadow）")]
+    public LayerMask shadowOnlyLayer;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -79,6 +114,9 @@ public class GameManager : MonoBehaviour
         
         // 订阅UIManager的Beginning动画完成事件
         SubscribeUIEvents();
+
+        // 【关键】初始化幻影相机的观测层级
+        InitializeShadowCamera();
     }
 
     void OnDestroy()
@@ -110,6 +148,13 @@ public class GameManager : MonoBehaviour
     {
         GameLogger.Log("玩家死亡，游戏失败", "GameManager");
         ChangeState(GameState.Defeat);
+        
+        // 【关键】强制切换相机到影子层，避免渲染Player死亡动画
+        if (shadowCamera != null)
+        {
+            shadowCamera.cullingMask = shadowOnlyLayer;
+            Debug.Log("→ GameManager: 玩家死亡，强制切换相机到影子层（避免显示死亡动画）");
+        }
         
         // 通知BossController记录玩家看到的最远进度
         if (bossController != null)
@@ -572,6 +617,9 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void StartGameSequences()
     {
+        // 【关键】在启动影子前更新相机观测层级
+        UpdateShadowCameraLayers();
+        
         // 启动Boss攻击序列（包含Boss影子）
         if (bossController != null)
         {
@@ -711,6 +759,76 @@ public class GameManager : MonoBehaviour
     public bool IsPlaying()
     {
         return currentState == GameState.Playing;
+    }
+
+    /// <summary>
+    /// 初始化幻影相机，设置初始观测层级
+    /// </summary>
+    private void InitializeShadowCamera()
+    {
+        if (shadowCamera == null)
+        {
+            Debug.LogError("! GameManager: 幻影相机未引用，无法初始化相机层级！");
+            return;
+        }
+
+        // 初始化为默认层（观测实体Player和Boss）
+        shadowCamera.cullingMask = defaultLayer;
+        Debug.Log($"✓ GameManager: 幻影相机初始化完成，初始观测层级设置为 defaultLayer");
+    }
+
+    /// <summary>
+    /// 根据影子播放状态动态更新幻影相机的观测层级
+    /// - Player有历史序列 && 未播完 → 观测PlayerShadow层
+    /// - Player无历史序列 || 已播完 → 观测Player层
+    /// - Boss有最远序列 && 未播完 → 观测BossShadow层
+    /// - Boss无最远序列 || 已播完 → 观测Boss层
+    /// </summary>
+    public void UpdateShadowCameraLayers()
+    {
+        if (shadowCamera == null)
+        {
+            Debug.LogError("! GameManager: 幻影相机未引用，无法更新观测层级！");
+            return;
+        }
+
+        // 检查Player影子状态
+        bool playerHasPath = pathRecorder != null && pathRecorder.GetMaxPathLength() > 0;
+        bool playerShadowCompleted = playerShadowController != null && playerShadowController.HasCompletedSequence();
+        
+        // 检查Boss影子状态
+        bool bossHasPath = bossController != null && bossController.GetMaxSeenActionIndex() >= 0;
+        bool bossShadowCompleted = bossShadowController != null && bossShadowController.HasCompletedSequence();
+
+        // 根据播放状态决定观测哪个层级
+        LayerMask targetMask = 0;
+        
+        // Player层级选择：有历史路径且未播完 → 观测PlayerShadow层
+        if (playerHasPath && !playerShadowCompleted)
+        {
+            targetMask |= playerShadowLayer;
+            Debug.Log("→ GameManager: 幻影相机观测 PlayerShadow 层（有历史路径且未播完）");
+        }
+        else
+        {
+            targetMask |= playerLayer;
+            Debug.Log("→ GameManager: 幻影相机观测 Player 层（无历史路径或已播完）");
+        }
+
+        // Boss层级选择：有最远序列且未播完 → 观测BossShadow层
+        if (bossHasPath && !bossShadowCompleted)
+        {
+            targetMask |= bossShadowLayer;
+            Debug.Log("→ GameManager: 幻影相机观测 BossShadow 层（有最远序列且未播完）");
+        }
+        else
+        {
+            targetMask |= bossLayer;
+            Debug.Log("→ GameManager: 幻影相机观测 Boss 层（无最远序列或已播完）");
+        }
+
+        // 应用新的观测层级
+        shadowCamera.cullingMask = targetMask;
     }
 }
 

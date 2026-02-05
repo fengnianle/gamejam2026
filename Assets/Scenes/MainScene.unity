@@ -1829,6 +1829,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 222368731}
     - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: shadowCamera
+      value: 
+      objectReference: {fileID: 1050611686}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
       propertyPath: restartButton
       value: 
       objectReference: {fileID: 0}
@@ -1841,13 +1845,41 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1880879371}
     - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: bossLayer.m_Bits
+      value: 183
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
       propertyPath: playerController
       value: 
       objectReference: {fileID: 637409371}
     - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: playerLayer.m_Bits
+      value: 119
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: defaultLayer.m_Bits
+      value: 247
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: bossShadowController
+      value: 
+      objectReference: {fileID: 957493432}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: bossShadowLayer.m_Bits
+      value: 567
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
       propertyPath: playerShadowController
       value: 
       objectReference: {fileID: 1341010925}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: shadowOnlyLayer.m_Bits
+      value: 823
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: playerShadowLayer.m_Bits
+      value: 311
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2593,6 +2625,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 2333535154690552892, guid: 43309091167b17a4f99a305967f44b83, type: 3}
   m_PrefabInstance: {fileID: 1042970992}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &1050611686 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 7512342462868675665, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
+  m_PrefabInstance: {fileID: 7895770654956221848}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1061175263
 GameObject:
@@ -3520,8 +3557,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.0638, y: -0.033199906, z: 0}
-    m_Extent: {x: 1.3066, y: 3.9144, z: 0}
+    m_Center: {x: -1.06525, y: -0.039249897, z: 0}
+    m_Extent: {x: 1.30575, y: 3.92275, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -5265,8 +5302,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.3495, y: 0.53125, z: 0}
-    m_Extent: {x: 1.122, y: 3.91745, z: 0}
+    m_Center: {x: -1.34295, y: 0.5265, z: 0}
+    m_Extent: {x: 1.12195, y: 3.9226, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
