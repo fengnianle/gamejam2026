@@ -118,16 +118,41 @@ public class PlayerShadowController : MonoBehaviour
     {
         if (!isPlaying) return;
 
-        // 等待当前动作完成
+        // 【关键修改】检查是否到达下一个动作的时间戳（提前leadTime秒）
+        if (!isPerformingAction && currentActionIndex < shadowSequence.Count)
+        {
+            PlayerAction nextAction = shadowSequence[currentActionIndex];
+            float gameElapsedTime = GameManager.GetGameElapsedTime();
+            
+            // 当游戏时间到达该动作的时间戳减去leadTime时，执行该动作（提前播放）
+            // 例如：记录时间戳2.35s，leadTime=1s，则在1.35s时播放
+            if (gameElapsedTime >= nextAction.timestamp - leadTime)
+            {
+                ExecuteCurrentAction();
+            }
+        }
+        
+        // 等待当前动作的动画播放完成
         if (isPerformingAction)
         {
             actionTimer -= Time.deltaTime;
             if (actionTimer <= 0f)
             {
                 isPerformingAction = false;
+                currentActionIndex++; // 移动到下一个动作
                 
-                // 等待间隔时间后执行下一个动作
-                Invoke(nameof(ExecuteNextAction), actionInterval);
+                // 检查是否播放完所有动作
+                if (currentActionIndex >= shadowSequence.Count)
+                {
+                    GameLogger.Log("PlayerShadow: 影子序列播放完成", "PlayerShadow");
+                    StopShadowSequence();
+                    
+                    // 【关键】通知GameManager更新相机观测层级（切换回Player层）
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.UpdateShadowCameraLayers();
+                    }
+                }
             }
         }
     }
@@ -188,9 +213,9 @@ public class PlayerShadowController : MonoBehaviour
 
         isPlaying = true;
         currentActionIndex = 0;
-        ExecuteCurrentAction();
+        // 【关键修改】不立即执行，而是在Update中根据时间戳判断何时执行
         
-        GameLogger.Log($"PlayerShadow: ✅ 开始播放影子序列，共 {shadowSequence.Count} 个动作", "PlayerShadow");
+        GameLogger.Log($"PlayerShadow: ✅ 开始播放影子序列，共 {shadowSequence.Count} 个动作（按时间戳播放）", "PlayerShadow");
     }
 
     /// <summary>
@@ -280,18 +305,7 @@ public class PlayerShadowController : MonoBehaviour
     void ExecuteCurrentAction()
     {
         if (!isPlaying || shadowSequence.Count == 0) return;
-        if (currentActionIndex >= shadowSequence.Count)
-        {
-            GameLogger.Log("PlayerShadow: 影子序列播放完成", "PlayerShadow");
-            StopShadowSequence();
-            
-            // 【关键】通知GameManager更新相机观测层级（切换回Player层）
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.UpdateShadowCameraLayers();
-            }
-            return;
-        }
+        if (currentActionIndex >= shadowSequence.Count) return;
 
         PlayerAction currentAction = shadowSequence[currentActionIndex];
         isPerformingAction = true;
@@ -300,32 +314,20 @@ public class PlayerShadowController : MonoBehaviour
         AnimationClip clip = GetAnimationClip(currentAction.attackType);
         actionTimer = clip != null ? clip.length : actionDuration;
 
+        // 【SequenceDebug】输出PlayerShadow执行动作的时刻和索引（使用相对时间和记录时间戳）
+        float relativeTime = GameManager.GetGameElapsedTime();
+        GameLogger.Log($"[SequenceDebug] PlayerShadow执行动作 - 索引:[{currentActionIndex}] 动作:{currentAction.attackType} 时长:{actionTimer:F2}秒 记录时间戳:{currentAction.timestamp:F2}s 实际播放时间:+{relativeTime:F2}s", "SequenceDebug");
+
         // 播放对应的动画
         PlayActionAnimation(currentAction.attackType);
 
-        GameLogger.Log($"PlayerShadow: 执行动作 [{currentActionIndex}] {currentAction.attackType}，持续时间 {actionTimer:F2} 秒", "PlayerShadow");
+        GameLogger.Log($"PlayerShadow: 执行动作 [{currentActionIndex}] {currentAction.attackType}，持续时间 {actionTimer:F2} 秒，记录时间戳 {currentAction.timestamp:F2}s", "PlayerShadow");
     }
 
     /// <summary>
-    /// 移动到下一个动作
+    /// 移动到下一个动作（已废弃，索引递增现在在Update中处理）
     /// </summary>
-    void ExecuteNextAction()
-    {
-        if (!isPlaying) return;
-
-        currentActionIndex++;
-
-        // 检查是否到达序列末尾
-        if (currentActionIndex >= shadowSequence.Count)
-        {
-            GameLogger.Log("PlayerShadow: 影子序列播放完成", "PlayerShadow");
-            StopShadowSequence();
-        }
-        else
-        {
-            ExecuteCurrentAction();
-        }
-    }
+    // void ExecuteNextAction() - 已移除，逻辑整合到Update中
 
     /// <summary>
     /// 根据攻击类型获取对应的动画片段
