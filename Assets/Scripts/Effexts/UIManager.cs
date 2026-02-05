@@ -104,6 +104,17 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 播放BGM（游戏开始时调用，可在Animation Event中使用）
+    /// </summary>
+    public void PlayBGM()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBGM();
+        }
+    }
+
+    /// <summary>
     /// 播放随机剑击音效
     /// </summary>
     public void PlayRandomSwordClashSFX()
@@ -160,16 +171,6 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region BGM Interface Methods
-    /// <summary>
-    /// 播放背景音乐
-    /// </summary>
-    public void PlayBGM()
-    {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayBGM();
-        }
-    }
 
     /// <summary>
     /// 停止背景音乐

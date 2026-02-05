@@ -252,6 +252,12 @@ public class PlayerController : MonoBehaviour
         // 使用新的战斗过程日志
         GameLogger.LogCombatDamage("Player", damage, currentHealth, characterStats.maxHealth);
 
+        // 播放受伤音效
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHurt();
+        }
+
         // 更新血条显示
         if (hpBar != null)
         {
@@ -468,6 +474,13 @@ public class PlayerController : MonoBehaviour
         animator.Play(attackClip.name);
         Invoke(nameof(ResetAttackState), attackClip.length);
         
+        // 播放攻击音效
+        AttackType attackType = GetAttackTypeFromClip(attackClip);
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayAttackSound(attackType);
+        }
+        
         // 记录玩家输入到路径记录器
         // 如果引用丢失，重新从单例获取
         if (pathRecorder == null)
@@ -481,7 +494,6 @@ public class PlayerController : MonoBehaviour
         
         if (pathRecorder != null)
         {
-            AttackType attackType = GetAttackTypeFromClip(attackClip);
             pathRecorder.RecordInput(attackType);
         }
         else

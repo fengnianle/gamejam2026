@@ -118,6 +118,26 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 根据攻击类型播放对应的剑击音效
+    /// AttackX -> SwordClash1, AttackY -> SwordClash2, AttackB -> SwordClash3
+    /// </summary>
+    public void PlayAttackSound(AttackType attackType)
+    {
+        switch (attackType)
+        {
+            case AttackType.AttackX:
+                PlaySwordClash1();
+                break;
+            case AttackType.AttackY:
+                PlaySwordClash2();
+                break;
+            case AttackType.AttackB:
+                PlaySwordClash3();
+                break;
+        }
+    }
+
     public void PlayJapaneseDrum()
     {
         PlaySFX(japaneseDrumSFX);

@@ -54,11 +54,17 @@ public class CutsceneManager : MonoBehaviour
     /// </summary>
     [Space(10)]
     [Header("动画状态名称配置")]
-    [Tooltip("初始位置动画的状态名称（单帧动画，用于重置Player和Boss到初始位置）")]
+    [Tooltip("初始位置动画的状态名称（单帧动画，用于重置Player和Boss到初始位置，距离远）")]
     public string initialPositionState = "InitialPosition";
     
     [Tooltip("开场演出动画的状态名称")]
     public string openingCutsceneState = "OpeningCutscene";
+    
+    [Tooltip("角色弹开动画的状态名称（攻击模式结束时播放）")]
+    public string roundGapState = "RoundGap";
+    
+    [Tooltip("获胜演出动画的状态名称（玩家获胜时播放）")]
+    public string winState = "Win";
     
     [Tooltip("比赛开始演出动画的状态名称")]
     public string gameStartCutsceneState = "GameStart";
@@ -80,6 +86,9 @@ public class CutsceneManager : MonoBehaviour
     [SerializeField]
     [Tooltip("当前是否正在播放演出")]
     private bool isPlayingCutscene = false;
+    
+    [Tooltip("演出开始前的相机渲染层（用于演出结束后恢复）")]
+    private LayerMask previousCullingMask;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -110,13 +119,6 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放开场演出", "CutsceneManager");
         
-        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
-        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
-        {
-            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
-            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
-        }
-        
         // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
         DisableCharacterAnimators();
         
@@ -140,12 +142,8 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放比赛开始演出", "CutsceneManager");
         
-        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
-        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
-        {
-            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
-            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
-        }
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
         
         if (cutsceneAnimator != null)
         {
@@ -166,12 +164,8 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放重新开始演出", "CutsceneManager");
         
-        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
-        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
-        {
-            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
-            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
-        }
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
         
         if (cutsceneAnimator != null)
         {
@@ -192,12 +186,8 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放胜利演出", "CutsceneManager");
         
-        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
-        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
-        {
-            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
-            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
-        }
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
         
         if (cutsceneAnimator != null)
         {
@@ -218,12 +208,8 @@ public class CutsceneManager : MonoBehaviour
     {
         GameLogger.Log("CutsceneManager: 开始播放失败演出", "CutsceneManager");
         
-        // 【关键】强制切换相机到实物层（Player + Boss），确保演出中渲染真实角色
-        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
-        {
-            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
-            Debug.Log("→ CutsceneManager: 演出开始，切换相机到实物层（Player + Boss）");
-        }
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
         
         if (cutsceneAnimator != null)
         {
@@ -234,6 +220,28 @@ public class CutsceneManager : MonoBehaviour
         {
             // 如果没有动画，直接通知失败演出完成
             OnDefeatCutsceneComplete();
+        }
+    }
+
+    /// <summary>
+    /// 播放获胜演出（玩家获胜时调用）
+    /// </summary>
+    public void PlayWinCutscene()
+    {
+        GameLogger.Log("CutsceneManager: 开始播放获胜演出", "CutsceneManager");
+        
+        // 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+        DisableCharacterAnimators();
+        
+        if (cutsceneAnimator != null)
+        {
+            isPlayingCutscene = true;
+            cutsceneAnimator.Play(winState);
+        }
+        else
+        {
+            // 如果没有动画，直接通知获胜演出完成
+            OnWinCutsceneComplete();
         }
     }
 
@@ -286,6 +294,9 @@ public class CutsceneManager : MonoBehaviour
         
         isPlayingCutscene = false;
         
+        // 重新启用Player和Boss的Animator
+        EnableCharacterAnimators();
+        
         // 通知GameManager重新开始演出已完成
         if (GameManager.Instance != null)
         {
@@ -301,6 +312,9 @@ public class CutsceneManager : MonoBehaviour
         GameLogger.Log("CutsceneManager: 胜利演出完成（通过Animation Event触发）", "CutsceneManager");
         
         isPlayingCutscene = false;
+        
+        // 重新启用Player和Boss的Animator
+        EnableCharacterAnimators();
         
         // 通知GameManager胜利演出已完成
         if (GameManager.Instance != null)
@@ -318,10 +332,32 @@ public class CutsceneManager : MonoBehaviour
         
         isPlayingCutscene = false;
         
+        // 重新启用Player和Boss的Animator
+        EnableCharacterAnimators();
+        
         // 通知GameManager失败演出已完成
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnDefeatCutsceneComplete();
+        }
+    }
+
+    /// <summary>
+    /// 获胜演出完成回调（由Animation Event调用）
+    /// </summary>
+    public void OnWinCutsceneComplete()
+    {
+        GameLogger.Log("CutsceneManager: 获胜演出完成（通过Animation Event触发）", "CutsceneManager");
+        
+        isPlayingCutscene = false;
+        
+        // 重新启用Player和Boss的Animator
+        EnableCharacterAnimators();
+        
+        // 通知GameManager获胜演出已完成
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnWinCutsceneComplete();
         }
     }
 
@@ -331,6 +367,16 @@ public class CutsceneManager : MonoBehaviour
     /// </summary>
     void DisableCharacterAnimators()
     {
+        // 【关键】记录当前相机渲染层，并切换到实物层（Player + Boss）
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            // 记录当前的 cullingMask
+            previousCullingMask = GameManager.Instance.shadowCamera.cullingMask;
+            // 切换到实物层
+            GameManager.Instance.shadowCamera.cullingMask = GameManager.Instance.defaultLayer;
+            GameLogger.Log($"CutsceneManager: 已记录并切换相机渲染层 (之前: {previousCullingMask.value}, 现在: {GameManager.Instance.defaultLayer.value})", "CutsceneManager");
+        }
+        
         // 禁用Player Animator
         if (playerObject != null)
         {
@@ -381,6 +427,13 @@ public class CutsceneManager : MonoBehaviour
     /// </summary>
     void EnableCharacterAnimators()
     {
+        // 【关键】恢复之前记录的相机渲染层
+        if (GameManager.Instance != null && GameManager.Instance.shadowCamera != null)
+        {
+            GameManager.Instance.shadowCamera.cullingMask = previousCullingMask;
+            GameLogger.Log($"CutsceneManager: 已恢复相机渲染层 (恢复为: {previousCullingMask.value})", "CutsceneManager");
+        }
+        
         // 启用Player Animator
         if (playerObject != null)
         {
@@ -423,6 +476,22 @@ public class CutsceneManager : MonoBehaviour
                 bossShadowAnimator.enabled = true;
                 GameLogger.Log("CutsceneManager: 已启用Boss Shadow Animator", "CutsceneManager");
             }
+        }
+    }
+    
+    /// <summary>
+    /// 重置演出动画控制器到指定状态（内部方法）
+    /// 在演出完成后调用，确保动画控制器返回到可重新播放的状态
+    /// </summary>
+    /// <param name="targetState">目标状态名称，默认为初始位置状态</param>
+    void ResetCutsceneAnimator(string targetState = null)
+    {
+        if (cutsceneAnimator != null)
+        {
+            // 如果没有指定目标状态，使用初始位置状态
+            string stateToPlay = string.IsNullOrEmpty(targetState) ? initialPositionState : targetState;
+            cutsceneAnimator.Play(stateToPlay);
+            GameLogger.Log($"CutsceneManager: 已重置演出动画控制器到状态: {stateToPlay}", "CutsceneManager");
         }
     }
     
@@ -480,5 +549,54 @@ public class CutsceneManager : MonoBehaviour
 	public void CallWinPerformance()
 	{
 		UIManager.Instance.PlayWinAnimation();
+	}
+
+	/// <summary>
+	/// 播放双方弹开动画（攻击模式结束时调用）
+	/// </summary>
+	public void PlayRoundGapAnimation()
+	{
+		GameLogger.Log("CutsceneManager: 播放双方弹开动画", "CutsceneManager");
+		
+		// 禁用Player和Boss的Animator，避免角色自身动画干扰演出
+		DisableCharacterAnimators();
+		
+		if (cutsceneAnimator != null)
+		{
+			// 【调试】输出当前状态信息
+			AnimatorStateInfo currentState = cutsceneAnimator.GetCurrentAnimatorStateInfo(0);
+			GameLogger.Log($"CutsceneManager: 当前动画状态: {currentState.shortNameHash}, 准备切换到 {roundGapState}", "CutsceneManager");
+			
+			// 【关键】使用协程延迟一帧播放，确保 Animator 状态机已准备好
+			StartCoroutine(PlayRoundGapDelayed());
+		}
+		else
+		{
+			GameLogger.LogWarning("CutsceneManager: cutsceneAnimator为null，无法播放双方弹开动画！", "CutsceneManager");
+		}
+	}
+	
+	/// <summary>
+	/// 延迟播放 RoundGap 动画（协程）
+	/// </summary>
+	private System.Collections.IEnumerator PlayRoundGapDelayed()
+	{
+		// 等待下一帧，让 Animator 状态机更新
+		yield return null;
+		
+		// 强制从头播放 RoundGap 动画
+		cutsceneAnimator.Play(roundGapState, -1, 0f);
+		GameLogger.Log($"CutsceneManager: 已在协程中调用 cutsceneAnimator.Play({roundGapState}, -1, 0f)", "CutsceneManager");
+	}
+	
+	/// <summary>
+	/// RoundGap动画完成回调（由Animation Event调用）
+	/// </summary>
+	public void OnRoundGapAnimationComplete()
+	{
+		GameLogger.Log("CutsceneManager: RoundGap动画完成（通过Animation Event触发）", "CutsceneManager");
+		
+		// 重新启用Player和Boss的Animator
+		EnableCharacterAnimators();
 	}
 }

@@ -338,7 +338,13 @@ public class BossController : MonoBehaviour
         if (ShockWaveManager.Instance != null)
         {
             ShockWaveManager.Instance.CallShockWave();
-            GameLogger.Log("政击模式结杞，播放冲击波特效", "Combat");
+            GameLogger.Log("攻击模式结束，播放冲击波特效", "Combat");
+        }
+        
+        // 播放地面震动动画
+        if (CutsceneManager.Instance != null)
+        {
+            CutsceneManager.Instance.PlayRoundGapAnimation();
         }
     }
 
@@ -771,6 +777,22 @@ public class BossController : MonoBehaviour
             // -1 表示默认层，0f 表示从动画的0%位置开始播放
             animator.Play(clipToPlay.name, -1, 0f);
             GameLogger.Log($"已调用animator.Play({clipToPlay.name}, -1, 0f) 强制从头播放", "BossController");
+            
+            // 播放攻击音效
+            if (actionType == BossActionType.AttackX || actionType == BossActionType.AttackY || actionType == BossActionType.AttackB)
+            {
+                if (AudioManager.Instance != null)
+                {
+                    AttackType attackType = actionType switch
+                    {
+                        BossActionType.AttackX => AttackType.AttackX,
+                        BossActionType.AttackY => AttackType.AttackY,
+                        BossActionType.AttackB => AttackType.AttackB,
+                        _ => AttackType.AttackX
+                    };
+                    AudioManager.Instance.PlayAttackSound(attackType);
+                }
+            }
         }
     }
 

@@ -132,7 +132,7 @@ MonoBehaviour:
   - attackSequence: XXX
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
-    idleTime: 1
+    idleTime: 2.1
     playShockWaveOnEnd: 1
   - attackSequence: YYY
     hasIntervalBetweenAttacks: 0

@@ -407,6 +407,18 @@ public class GameManager : MonoBehaviour
         // RestartGame();
     }
 
+    /// <summary>
+    /// 获胜脚本演出完成的回调
+    /// 此方法由CutsceneManager调用，在获胜演出的最后一帧触发
+    /// 可以在这里添加获胜后的逻辑（如返回主菜单或下一关卡）
+    /// </summary>
+    public void OnWinCutsceneComplete()
+    {
+        GameLogger.Log("获胜脚本演出完成", "GameManager");
+        // 可以在这里添加获胜后的逻辑，比如返回主菜单
+        // EndGame();
+    }
+
     /// <summary> ----------------------------------------- 私有方法 ----------------------------------------- </summary>
     /// <summary>
     /// 订阅UI事件
@@ -674,10 +686,10 @@ public class GameManager : MonoBehaviour
             bossController.StopSequence();
         }
         
-        // 播放胜利脚本演出
+        // 播放获胜脚本演出
         if (cutsceneManager != null)
         {
-            cutsceneManager.PlayVictoryCutscene();
+            cutsceneManager.PlayWinCutscene();
         }
         
         // 可以在这里添加：
