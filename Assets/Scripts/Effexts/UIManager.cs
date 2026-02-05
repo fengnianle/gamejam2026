@@ -500,4 +500,9 @@ public class UIManager : MonoBehaviour
         }
         return 0f;
     }
+
+	public void CameraToMaxSize()
+	{
+		CameraController.Instance.TransitionToMaxSize();
+	}
 }

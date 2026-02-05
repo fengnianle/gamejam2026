@@ -461,4 +461,24 @@ public class CutsceneManager : MonoBehaviour
         isPlayingCutscene = false;
         GameLogger.Log("CutsceneManager: 演出已停止", "CutsceneManager");
     }
+
+	public void PlayHitPause()
+	{
+		HitPauseManager.Instance.CallHitPause(0.5f);
+	}
+
+	public void CameraToMinSize()
+	{
+		CameraController.Instance.TransitionToMinSize();
+	}
+
+	public void CameraToMaxSize()
+	{
+		CameraController.Instance.TransitionToMaxSize();
+	}
+
+	public void CallWinPerformance()
+	{
+		UIManager.Instance.PlayWinAnimation();
+	}
 }
