@@ -98,6 +98,13 @@ public class BossController : MonoBehaviour
     private float actionTimer = 0f;
     
     /// <summary>
+    /// 用于控制Boss是否可接受Idle伤害的状态标记
+    /// 由Animation Event通过 EnableIdleDamage/DisableIdleDamage 控制
+    /// </summary>
+    [Tooltip("是否处于可接受Idle伤害的状态")]
+    public bool isIdleVulnerable = true;
+
+    /// <summary>
     /// 玩家看到过的最远攻击动作索引（用于影子系统）
     /// -1 表示玩家还未看到任何攻击
     /// </summary>
@@ -331,6 +338,34 @@ public class BossController : MonoBehaviour
     }
 
     /// <summary>
+    /// 开启Boss的可受Idle伤害状态（由Animation Event调用）
+    /// 通常在攻击动作结束回到Idle时调用
+    /// </summary>
+    public void EnableIdleDamage()
+    {
+        isIdleVulnerable = true;
+        GameLogger.LogBossAction("EnableIdleDamage: Boss进入可受Idle伤害状态");
+    }
+
+    /// <summary>
+    /// 关闭Boss的可受Idle伤害状态（由Animation Event调用）
+    /// 通常在攻击动作开始前调用
+    /// </summary>
+    public void DisableIdleDamage()
+    {
+        isIdleVulnerable = false;
+        GameLogger.LogBossAction("DisableIdleDamage: Boss退出可受Idle伤害状态（进入霸体/攻击态）");
+    }
+
+    /// <summary>
+    /// 检查Boss当前是否可接受Idle伤害
+    /// </summary>
+    public bool IsIdleVulnerable()
+    {
+        return isIdleVulnerable;
+    }
+
+    /// <summary>
     /// 播放冲击波特效
     /// </summary>
     void PlayShockWaveEffect()
@@ -346,6 +381,17 @@ public class BossController : MonoBehaviour
         {
             CutsceneManager.Instance.PlayRoundGapAnimation();
         }
+    }
+
+    /// <summary>
+    /// 被反制时的处理
+    /// </summary>
+    public void OnCountered()
+    {
+        // 按照最新规则：Boss被反制后不停止序列，也不强制播放受击动画
+        // 只受到伤害（已在AttackWindow中处理逻辑扣血）
+        // 这里保留方法接口但清空逻辑，以便未来有特效需求
+        // GameLogger.LogBossAction("Boss被反制，继续执行当前序列");
     }
 
     // ==================== 受伤系统 ====================

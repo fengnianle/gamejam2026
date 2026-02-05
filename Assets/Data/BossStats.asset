@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3bfce3192d900949abf5bbcc7665f19, type: 3}
   m_Name: BossStats
   m_EditorClassIdentifier: 
-  maxHealth: 500
+  maxHealth: 1000
   attackDamage: 50
-  clashDamage: 40
+  clashDamage: 30
+  idleAttackDamage: 10
   characterName: Boss

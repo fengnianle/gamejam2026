@@ -83,6 +83,12 @@ public class PlayerController : MonoBehaviour
     private bool isAttacking = false;
     private bool canAcceptInput = false; // 是否可以接受玩家输入（初始为false，等待GameManager开启）
     private bool hasAutoCountered = false; // 标记本次攻击窗口是否已经自动反制过
+    
+    /// <summary>
+    /// 标记当前正在执行的攻击是否已经被反制系统（CounterInputDetector）处理过逻辑
+    /// 如果为true，则此次攻击窗口结束时不应再造成Idle伤害或常规伤害
+    /// </summary>
+    private bool attackConsumedByCounter = false;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -471,6 +477,10 @@ public class PlayerController : MonoBehaviour
         if (!ComponentValidator.CanPlayAnimation(animator, attackClip)) return;
 
         isAttacking = true;
+        
+        // 重置被消耗标记，新的攻击开始时默认为“普通攻击/偷刀”，除非被反制逻辑标记
+        attackConsumedByCounter = false;
+        
         animator.Play(attackClip.name);
         Invoke(nameof(ResetAttackState), attackClip.length);
         
@@ -500,6 +510,22 @@ public class PlayerController : MonoBehaviour
         {
             GameLogger.LogError("PlayerController.PerformAttack(): pathRecorder 为 null，无法记录输入！", "PlayerController");
         }
+    }
+    
+    /// <summary>
+    /// 标记当前攻击已被反制系统由于逻辑判定消耗
+    /// </summary>
+    public void MarkAttackAsConsumed()
+    {
+        attackConsumedByCounter = true;
+    }
+
+    /// <summary>
+    /// 检查当前攻击是否已被反制系统消耗
+    /// </summary>
+    public bool WasAttackConsumed()
+    {
+        return attackConsumedByCounter;
     }
     
     /// <summary>

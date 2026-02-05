@@ -18,8 +18,8 @@ public class CounterInputDetector : MonoBehaviour
     [Tooltip("反制成功时的奖励伤害倍数")]
     public float counterDamageMultiplier = 2f;
     
-    [Tooltip("反制成功后的无敌时间")]
-    public float invincibilityTime = 0.5f;
+    // [Tooltip("反制成功后的无敌时间")]
+    // public float invincibilityTime = 0.5f;
 
     [Header("按键映射")]
     [Tooltip("反制攻击X的按键")]
@@ -35,20 +35,22 @@ public class CounterInputDetector : MonoBehaviour
     [SerializeField] private AttackWindow currentAttackWindow;
     [SerializeField] private AttackType expectedAttackType;
     [SerializeField] private bool isWaitingForInput = false;
-    [SerializeField] private bool isInvincible = false;
-    private float invincibilityEndTime = 0f;
+    // [SerializeField] private bool isInvincible = false;
+    // private float invincibilityEndTime = 0f;
 
     void Update()
     {
         // 如果组件被禁用，不进行任何检测（玩家死亡时会禁用此组件）
         if (!enabled) return;
         
-        // 检查无敌时间
+        // 检查无敌时间 (已移除无敌机制)
+        /*
         if (isInvincible && Time.time >= invincibilityEndTime)
         {
             isInvincible = false;
             GameLogger.LogInvincibility("Player无敌时间结束");
         }
+        */
 
         // 如果正在等待输入，检测按键
         if (isWaitingForInput && currentAttackWindow != null)
@@ -123,13 +125,13 @@ public class CounterInputDetector : MonoBehaviour
             case AttackRelationship.AttackResult.Counter:
                 // 压制成功
                 GameLogger.LogCounterSuccess(actionName, expectedAttackType);
-                GameLogger.Log($"压制成功！{AttackRelationship.GetAttackName(playerInput)} 压制了 {AttackRelationship.GetAttackName(expectedAttackType)}", "Combat");
+                GameLogger.Log($"压制成功！{AttackRelationship.GetAttackName(playerInput)} 压制了 {AttackRelationship.GetAttackName(expectedAttackType)}", "DebugAttack");
                 OnPlayerAction(actionName, result);
                 break;
                 
             case AttackRelationship.AttackResult.Clash:
                 // 同时攻击
-                GameLogger.Log($"同时攻击！玩家和Boss都使用了 {AttackRelationship.GetAttackName(playerInput)}", "Combat");
+                GameLogger.Log($"同时攻击！玩家和Boss都使用了 {AttackRelationship.GetAttackName(playerInput)}", "DebugAttack");
                 OnPlayerAction(actionName, result);
                 break;
                 
@@ -154,10 +156,13 @@ public class CounterInputDetector : MonoBehaviour
             currentAttackWindow.OnCounterSuccess(actionName);
         }
 
-        // 进入无敌状态
-        isInvincible = true;
-        invincibilityEndTime = Time.time + invincibilityTime;
-        GameLogger.LogInvincibility($"Player进入无敌状态，持续 {invincibilityTime} 秒");
+        // 进入无敌状态 (已移除)
+        // isInvincible = true;
+        // invincibilityEndTime = Time.time + invincibilityTime;
+        // GameLogger.LogInvincibility($"Player进入无敌状态，持续 {invincibilityTime} 秒");
+        
+        // 标记当前玩家攻击已被消耗（用于反制/拼刀），防止后续造成Idle伤害
+        MarkPlayerAttackConsumed();
 
         // 可以在这里添加：
         // - 播放反制成功动画
@@ -186,7 +191,8 @@ public class CounterInputDetector : MonoBehaviour
             currentAttackWindow.OnPlayerResponse(actionName, result);
         }
 
-        // 只有压制成功时才进入无敌状态
+        // 只有压制成功时才进入无敌状态 (已移除)
+        /*
         if (result == AttackRelationship.AttackResult.Counter)
         {
             isInvincible = true;
@@ -194,6 +200,13 @@ public class CounterInputDetector : MonoBehaviour
             GameLogger.LogInvincibility($"Player压制成功，进入无敌状态，持续 {invincibilityTime} 秒");
             
             // Spark特效已在AttackWindow.OnPlayerResponse()中统一播放
+        }
+        */
+        
+        // 如果是反制成功或拼刀，说明这次攻击已经有了逻辑归宿，不能算作偷刀
+        if (result == AttackRelationship.AttackResult.Counter || result == AttackRelationship.AttackResult.Clash)
+        {
+            MarkPlayerAttackConsumed();
         }
 
         // 可以在这里根据结果添加不同的效果：
@@ -206,6 +219,19 @@ public class CounterInputDetector : MonoBehaviour
         
         // 隐藏UI提示
         HideCounterPrompt();
+    }
+    
+    /// <summary>
+    /// 标记玩家当前的攻击已被反制系统消耗
+    /// </summary>
+    void MarkPlayerAttackConsumed()
+    {
+        var playerController = GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.MarkAttackAsConsumed();
+            GameLogger.Log("标记玩家攻击已被反制逻辑消耗，取消Idle伤害", "DebugAttack");
+        }
     }
 
     /// <summary>
@@ -257,11 +283,11 @@ public class CounterInputDetector : MonoBehaviour
     }
 
     /// <summary>
-    /// 检查是否处于无敌状态
+    /// 检查是否处于无敌状态 (已废弃，始终返回false)
     /// </summary>
     public bool IsInvincible()
     {
-        return isInvincible;
+        return false; // isInvincible;
     }
 
     /// <summary>

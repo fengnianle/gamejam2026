@@ -118,6 +118,15 @@ public class AttackWindow : MonoBehaviour
     {
         if (targetObject == null) return;
 
+        // 【关键修复】如果是玩家自己的攻击窗口（攻击Boss），不应该通知CounterSystem
+        // 只有当targetObject是Player时（即Enemy攻击Player），才通知CounterSystem
+        // 这里假设 targetObject 拥有 tags 或者 specific components. 
+        // 简单判断：如果 targetObject 是 Boss (有 BossController)，则不通知
+        if (targetObject.GetComponent<BossController>() != null)
+        {
+            return;
+        }
+
         // 尝试通知玩家的反制检测器
         var counterDetector = targetObject.GetComponent<CounterInputDetector>();
         if (counterDetector != null)
@@ -141,7 +150,7 @@ public class AttackWindow : MonoBehaviour
         float relativeTime = GameManager.GetGameElapsedTime();
         GameLogger.Log($"[SequenceDebug] 玩家实际输入 - 动作:{playerAction} 对应Boss攻击:{attackType} 结果:{AttackRelationship.GetResultDescription(attackResult)} 相对时间:+{relativeTime:F2}s", "SequenceDebug");
         
-        GameLogger.Log($"玩家使用 {playerAction} 对 {attackType} 做出响应，结果: {AttackRelationship.GetResultDescription(attackResult)}", "Combat");
+        GameLogger.Log($"玩家使用 {playerAction} 对 {attackType} 做出响应，结果: {AttackRelationship.GetResultDescription(attackResult)}", "DebugAttack");
         
         // 根据攻击结果处理伤害
         HandleDamageByResult(attackResult);
@@ -186,19 +195,49 @@ public class AttackWindow : MonoBehaviour
         var bossController = targetObject.GetComponent<BossController>();
         if (bossController != null)
         {
-            // 检查Boss是否正在攻击窗口内
+            // 旧逻辑：检查Boss是否正在攻击窗口内
+            /*
             var bossAttackWindow = bossController.GetComponent<AttackWindow>();
             if (bossAttackWindow != null && bossAttackWindow.IsWindowActive())
             {
                 // Boss正在攻击，这是一次反制动作
                 // 伤害已经在Boss的AttackWindow.HandleDamageByResult()中处理了
                 // 不应该再次造成伤害，避免双重判定
-                GameLogger.Log($"Player攻击触发反制判定，伤害已在Boss攻击窗口中处理，跳过重复判定", "Combat");
+                GameLogger.Log($"Player攻击触发反制判定，伤害已在Boss攻击窗口中处理，跳过重复判定", "DebugAttack");
                 return;
+            }
+            */
+            
+            // 【关键修复】使用 BossController 的 IsIdleVulnerable 状态来精准判定是否可以造成 Idle 伤害
+            // 如果 Boss 不在 Idle 状态（即在攻击态/霸体态），则玩家的非反制攻击无效
+            if (!bossController.IsIdleVulnerable())
+            {
+                 // 调试日志：攻击无效
+                 if (showDebugInfo)
+                    GameLogger.Log("DealDamage跳过: Boss处于攻击/霸体状态 (IsIdleVulnerable=false)，玩家攻击无效或反制失败", "DebugAttack");
+                 return;
             }
             
             // Boss未出招，玩家攻击静止的Boss，造成低伤害
             var playerCtrl = GetComponentInParent<PlayerController>();
+
+            // 【关键修复】检查这次攻击是否是为了反制Boss而发起的
+            // 如果是，那么伤害逻辑已经在CounterInputDetector -> Boss.AttackWindow中结算过了（Clash或Counter）
+            // 这里就不应该再造成Idle伤害
+            if (playerCtrl != null)
+            {
+                if (playerCtrl.WasAttackConsumed())
+                {
+                    // 攻击已被反制逻辑消耗，不做任何事
+                    // 仅调试模式输出
+                    // GameLogger.Log("DealDamage跳过: 攻击已被反制逻辑消耗 (WasAttackConsumed=true)", "DebugAttack");
+                    return;
+                }
+            }
+
+            // 原有的无敌检查已废弃，改为上述的 WasAttackConsumed 检查
+            // ...
+
             float idleDamage = damage; // 默认伤害
             
             if (playerCtrl != null && playerCtrl.characterStats != null)
@@ -208,12 +247,12 @@ public class AttackWindow : MonoBehaviour
             
             bossController.TakeDamage(idleDamage);
             GameLogger.LogDamageDealt(gameObject.name, targetObject.name, idleDamage);
-            GameLogger.Log($"玩家攻击静止的Boss，造成低伤害: {idleDamage}", "Combat");
+            GameLogger.Log($"玩家攻击静止的Boss，造成低伤害: {idleDamage}", "DebugAttack");
             onAttackHit?.Invoke(targetObject);
             return;
         }
 
-        GameLogger.LogWarning($"AttackWindow: 目标对象 {targetObject.name} 没有可接收伤害的组件！", "AttackWindow");
+        GameLogger.LogWarning($"AttackWindow: 目标对象 {targetObject.name} 没有可接收伤害的组件！", "DebugAttack");
     }
 
     /// <summary>
@@ -228,7 +267,7 @@ public class AttackWindow : MonoBehaviour
         
         if (bossController == null)
         {
-            GameLogger.LogError("AttackWindow: 无法找到Boss控制器！", "AttackWindow");
+            GameLogger.LogError("AttackWindow: 无法找到Boss控制器！", "DebugAttack");
             return;
         }
 
@@ -241,8 +280,12 @@ public class AttackWindow : MonoBehaviour
                     float counterDamage = bossController.characterStats != null ? 
                         bossController.characterStats.attackDamage : damage;
                     bossController.TakeDamage(counterDamage);
+                    
+                    // 按照新规则：Boss被反制后不停止序列
+                    // bossController.OnCountered();
+                    
                     GameLogger.LogDamageDealt("Player", gameObject.name, counterDamage);
-                    GameLogger.Log("压制成功！Boss受到伤害，Player安全", "Combat");
+                    GameLogger.Log("压制成功！Boss受到伤害，Player安全", "DebugAttack");
                 }
                 break;
                 
@@ -260,7 +303,7 @@ public class AttackWindow : MonoBehaviour
                     
                     GameLogger.LogDamageDealt("Boss", "Player", clashDamagePlayer);
                     GameLogger.LogDamageDealt("Player", "Boss", clashDamageBoss);
-                    GameLogger.Log("同时攻击！双方都受到伤害", "Combat");
+                    GameLogger.Log("同时攻击！双方都受到伤害", "DebugAttack");
                 }
                 break;
                 
@@ -270,7 +313,7 @@ public class AttackWindow : MonoBehaviour
                 {
                     playerController.TakeDamage(damage);
                     GameLogger.LogDamageDealt(gameObject.name, targetObject.name, damage);
-                    GameLogger.Log("玩家被击中！受到伤害", "Combat");
+                    GameLogger.Log("玩家被击中！受到伤害", "DebugAttack");
                 }
                 break;
         }
@@ -339,7 +382,7 @@ public class AttackWindow : MonoBehaviour
         {
             // 播放粒子特效
             sparkEffectParticle.Play();
-            GameLogger.Log("播放Spark反制成功特效", "Combat");
+            GameLogger.Log("播放Spark反制成功特效", "DebugAttack");
         }
     }
 }

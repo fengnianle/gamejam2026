@@ -113,7 +113,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logAttackWindow)
         {
-            Debug.Log($"<color=orange>[AttackWindow]</color> {message}");
+            Debug.Log($"<color=orange>[DebugAttack]</color> {message}");
         }
     }
 
@@ -126,7 +126,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logCounter)
         {
-            Debug.Log($"<color=yellow>[Counter]</color> {message}");
+            Debug.Log($"<color=yellow>[DebugAttack]</color> {message}");
         }
     }
 
@@ -137,7 +137,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logCounter)
         {
-            Debug.Log($"<color=lime>[Counter]</color> 🎯 完美反制！使用 {actionName} 反制了 {attackType}");
+            Debug.Log($"<color=lime>[DebugAttack]</color> 🎯 完美反制！使用 {actionName} 反制了 {attackType}");
         }
     }
 
@@ -148,7 +148,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logCounter)
         {
-            Debug.LogWarning($"<color=yellow>[Counter]</color> ❌ 反制失败：{reason}");
+            Debug.LogWarning($"<color=yellow>[DebugAttack]</color> ❌ 反制失败：{reason}");
         }
     }
 
@@ -159,7 +159,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logCounter)
         {
-            Debug.Log($"<color=yellow>[Counter]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
+            Debug.Log($"<color=yellow>[DebugAttack]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
         }
     }
 
@@ -170,7 +170,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logCounter)
         {
-            Debug.Log($"<color=yellow>[Counter]</color> 🛡️ {message}");
+            Debug.Log($"<color=yellow>[DebugAttack]</color> 🛡️ {message}");
         }
     }
 
@@ -183,7 +183,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logDamage)
         {
-            Debug.Log($"<color=red>[Damage]</color> {attacker} 对 {target} 造成 {damage} 点伤害");
+            Debug.Log($"<color=red>[DebugAttack]</color> {attacker} 对 {target} 造成 {damage} 点伤害");
         }
     }
 
@@ -194,7 +194,7 @@ public class GameLogger : MonoBehaviour
     {
         if (Instance.enableLogging && Instance.logDamage)
         {
-            Debug.Log($"<color=red>[Damage]</color> {target} 受到 {damage} 点伤害，当前生命值：{currentHealth}/{maxHealth}");
+            Debug.Log($"<color=red>[DebugAttack]</color> {target} 受到 {damage} 点伤害，当前生命值：{currentHealth}/{maxHealth}");
         }
     }
 
@@ -349,8 +349,8 @@ public class GameLogger : MonoBehaviour
         if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
         
         string colorTag = character.Contains("Boss") ? "<color=red>" : "<color=green>";
-        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color> OnAttackWindow Start");
-        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color>: 攻击窗口已开启 - 攻击类型: {attackType}");
+        Debug.Log($"<color=cyan>[DebugAttack]</color> {colorTag}{character}</color> OnAttackWindow Start");
+        Debug.Log($"<color=cyan>[DebugAttack]</color> {colorTag}{character}</color>: 攻击窗口已开启 - 攻击类型: {attackType}");
     }
 
     /// <summary>
@@ -361,8 +361,8 @@ public class GameLogger : MonoBehaviour
         if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
         
         string colorTag = character.Contains("Boss") ? "<color=red>" : "<color=green>";
-        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color>: 攻击窗口已关闭 - 持续时间: {duration:F2}秒");
-        Debug.Log($"<color=cyan>[AttackWindow]</color> {colorTag}{character}</color> OnAttackWindow End");
+        Debug.Log($"<color=cyan>[DebugAttack]</color> {colorTag}{character}</color>: 攻击窗口已关闭 - 持续时间: {duration:F2}秒");
+        Debug.Log($"<color=cyan>[DebugAttack]</color> {colorTag}{character}</color> OnAttackWindow End");
     }
 
     /// <summary>
@@ -372,7 +372,7 @@ public class GameLogger : MonoBehaviour
     {
         if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
         
-        Debug.Log($"<color=yellow>[Counter]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
+        Debug.Log($"<color=yellow>[DebugAttack]</color> ⚡ 敌人发起攻击: {attackType}，等待玩家反制输入...");
     }
 
     /// <summary>
@@ -396,7 +396,7 @@ public class GameLogger : MonoBehaviour
                 break;
         }
         
-        Debug.Log($"<color=yellow>[Counter]</color> <color=green>Player</color> 使用 {actionName}，结果: {resultText}");
+        Debug.Log($"<color=yellow>[DebugAttack]</color> <color=green>Player</color> 使用 {actionName}，结果: {resultText}");
     }
 
     /// <summary>
@@ -407,7 +407,7 @@ public class GameLogger : MonoBehaviour
         if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
         
         string colorTag = target.Contains("Boss") ? "<color=red>" : "<color=green>";
-        Debug.Log($"<color=magenta>[Damage]</color> {colorTag}{target}</color> 受到 {damage} 点伤害，当前生命值：{currentHealth}/{maxHealth}");
+        Debug.Log($"<color=magenta>[DebugAttack]</color> {colorTag}{target}</color> 受到 {damage} 点伤害，当前生命值：{currentHealth}/{maxHealth}");
     }
 
     /// <summary>
@@ -417,7 +417,7 @@ public class GameLogger : MonoBehaviour
     {
         if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
         
-        Debug.Log($"<color=red>[Boss]</color> 执行动作 {actionType}，持续时间 {duration:F1} 秒");
+        Debug.Log($"<color=red>[DebugAttack]</color> 执行动作 {actionType}，持续时间 {duration:F1} 秒");
     }
 
     #endregion
