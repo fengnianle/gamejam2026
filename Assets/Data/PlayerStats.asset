@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   maxHealth: 100
-  attackDamage: 50
-  clashDamage: 30
-  idleAttackDamage: 10
+  attackDamage: 20
+  clashDamage: 10
+  idleAttackDamage: 5
   characterName: Player

@@ -25,3 +25,15 @@ public class CharacterStats : ScriptableObject
     [Tooltip("角色名称")]
     public string characterName = "Character";
 }
+
+// 玩家配置建议：
+// Max Health: 100
+// Attack Damage: 20      (反制成功时对Boss造成的伤害，27次杀Boss)
+// Clash Damage: 10       (拼刀时给Boss造成的伤害)
+// Idle Attack Damage: 5  (偷刀伤害)
+
+// Boss配置建议：
+// Max Health: 540        (540 / 20 = 27次反制)
+// Attack Damage: 34      (击中玩家时造成的伤害，34 * 3 = 102 > 100，3刀带走玩家)
+// Clash Damage: 15       (拼刀时给玩家造成的伤害，玩家能抗 100 / 15 = 6.6 次拼刀)
+// Idle Attack Damage: 0  (Boss通常不会偷玩家的刀，设为0或保持很少)

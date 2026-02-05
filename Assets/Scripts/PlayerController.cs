@@ -486,10 +486,12 @@ public class PlayerController : MonoBehaviour
         
         // 播放攻击音效
         AttackType attackType = GetAttackTypeFromClip(attackClip);
+        /*
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayAttackSound(attackType);
         }
+        */
         
         // 记录玩家输入到路径记录器
         // 如果引用丢失，重新从单例获取

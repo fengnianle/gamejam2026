@@ -825,6 +825,7 @@ public class BossController : MonoBehaviour
             GameLogger.Log($"已调用animator.Play({clipToPlay.name}, -1, 0f) 强制从头播放", "BossController");
             
             // 播放攻击音效
+            /*
             if (actionType == BossActionType.AttackX || actionType == BossActionType.AttackY || actionType == BossActionType.AttackB)
             {
                 if (AudioManager.Instance != null)
@@ -839,6 +840,7 @@ public class BossController : MonoBehaviour
                     AudioManager.Instance.PlayAttackSound(attackType);
                 }
             }
+            */
         }
     }
 

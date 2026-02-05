@@ -159,6 +159,20 @@ public class AttackWindow : MonoBehaviour
         if (attackResult == AttackRelationship.AttackResult.Counter)
         {
             PlaySparkEffect();
+
+            // 播放此处的攻击音效
+             if (AudioManager.Instance != null)
+            {
+                // 播放Boss的攻击音效
+                AudioManager.Instance.PlayAttackSound(attackType);
+
+                // 播放Player的攻击音效
+                // 尝试将 playerAction 字符串转换为 AttackType 枚举
+                if (System.Enum.TryParse(playerAction, out AttackType playerAttackType))
+                {
+                    AudioManager.Instance.PlayAttackSound(playerAttackType);
+                }
+            }
         }
         
         onCounterSuccess?.Invoke(playerAction);
@@ -277,8 +291,9 @@ public class AttackWindow : MonoBehaviour
                 // 压制成功：玩家不减血，Boss减血
                 if (bossController != null)
                 {
-                    float counterDamage = bossController.characterStats != null ? 
-                        bossController.characterStats.attackDamage : damage;
+                    // 【关键修改】数值来源修正：Boss受到的伤害应该来自于Player的攻击力
+                    float counterDamage = (playerController != null && playerController.characterStats != null) ? 
+                        playerController.characterStats.attackDamage : damage;
                     bossController.TakeDamage(counterDamage);
                     
                     // 按照新规则：Boss被反制后不停止序列
@@ -293,10 +308,14 @@ public class AttackWindow : MonoBehaviour
                 // 同时攻击：双方都减血（使用clashDamage）
                 if (playerController != null && bossController != null)
                 {
-                    float clashDamagePlayer = playerController.characterStats != null ? 
-                        playerController.characterStats.clashDamage : damage * 0.8f;
-                    float clashDamageBoss = bossController.characterStats != null ? 
+                    // 【关键修改】数值来源修正：受到的伤害应该来自于对手的clashDamage
+                    // Player受到的伤害 = Boss的Clash伤害
+                    float clashDamagePlayer = bossController.characterStats != null ? 
                         bossController.characterStats.clashDamage : damage * 0.8f;
+                    
+                    // Boss受到的伤害 = Player的Clash伤害
+                    float clashDamageBoss = playerController.characterStats != null ? 
+                        playerController.characterStats.clashDamage : damage * 0.8f;
                         
                     playerController.TakeDamage(clashDamagePlayer);
                     bossController.TakeDamage(clashDamageBoss);

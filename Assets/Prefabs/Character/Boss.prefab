@@ -137,13 +137,33 @@ MonoBehaviour:
   - attackSequence: YYY
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
-    idleTime: 10
+    idleTime: 1
     playShockWaveOnEnd: 0
   - attackSequence: BBB
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
-    idleTime: 1
+    idleTime: 2.1
+    playShockWaveOnEnd: 1
+  - attackSequence: XYXY
+    hasIntervalBetweenAttacks: 0
+    intervalBetweenAttacks: 0.5
+    idleTime: 1.5
     playShockWaveOnEnd: 0
+  - attackSequence: YBYB
+    hasIntervalBetweenAttacks: 0
+    intervalBetweenAttacks: 0.5
+    idleTime: 1.5
+    playShockWaveOnEnd: 0
+  - attackSequence: BXBX
+    hasIntervalBetweenAttacks: 0
+    intervalBetweenAttacks: 0.5
+    idleTime: 2.1
+    playShockWaveOnEnd: 1
+  - attackSequence: XYBXYB
+    hasIntervalBetweenAttacks: 0
+    intervalBetweenAttacks: 0.5
+    idleTime: 2.1
+    playShockWaveOnEnd: 1
   attackDuration: 1
   actionSequence: []
   loopSequence: 1
