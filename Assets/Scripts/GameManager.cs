@@ -95,6 +95,14 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("影子观测层（包含PlayerShadow和BossShadow）")]
     public LayerMask shadowOnlyLayer;
+    
+    /// <summary>
+    /// 游戏时间原点（用于调试，记录当前游戏开始时的Time.time）
+    /// </summary>
+    [Space(10)]
+    [Header("调试信息")]
+    [Tooltip("当前游戏局的开始时间（Time.time）")]
+    private static float gameStartTime = 0f;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -246,7 +254,7 @@ public class GameManager : MonoBehaviour
         
         // 确保在状态改变后再次检查并启动序列
         // 延迟启动Boss和Player影子，确保所有组件已初始化
-        Invoke(nameof(StartGameSequences), 0.2f);
+        Invoke(nameof(StartGameSequences), 0f);
     }
 
     /// <summary>
@@ -609,7 +617,7 @@ public class GameManager : MonoBehaviour
         }
         
         // 延迟启动Boss和Player影子，确保所有组件已初始化
-        Invoke(nameof(StartGameSequences), 0.2f);
+        Invoke(nameof(StartGameSequences), 0f);
     }
     
     /// <summary>
@@ -617,6 +625,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void StartGameSequences()
     {
+        // 【调试】记录游戏时间原点
+        gameStartTime = Time.time;
+        GameLogger.Log($"[SequenceDebug] 游戏时间原点已设置 - 绝对时间:{Time.time:F2}s", "SequenceDebug");
+        
         // 【关键】在启动影子前更新相机观测层级
         UpdateShadowCameraLayers();
         
@@ -627,23 +639,11 @@ public class GameManager : MonoBehaviour
             GameLogger.Log("GameManager: 已启动Boss序列", "GameManager");
         }
         
-        // 启动Player影子
-        if (playerShadowController != null)
-        {
-            // Player影子与Boss影子一样，提前leadTime秒开始
-            Invoke(nameof(StartPlayerShadow), playerShadowController.leadTime);
-            GameLogger.Log($"GameManager: 将在{playerShadowController.leadTime}秒后启动Player影子", "GameManager");
-        }
-    }
-    
-    /// <summary>
-    /// 启动Player影子（延迟调用）
-    /// </summary>
-    void StartPlayerShadow()
-    {
+        // 启动Player影子（与Boss影子同步启动，按照时间戳播放）
         if (playerShadowController != null)
         {
             playerShadowController.StartShadowSequence();
+            GameLogger.Log("GameManager: 已启动Player影子序列（按时间戳播放）", "GameManager");
         }
     }
 
@@ -692,6 +692,14 @@ public class GameManager : MonoBehaviour
     void OnExitVictory()
     {
         GameLogger.Log("退出胜利状态", "GameManager");
+    }
+    
+    /// <summary>
+    /// 【公共静态方法】获取相对于游戏开始时间的时间差（用于调试）
+    /// </summary>
+    public static float GetGameElapsedTime()
+    {
+        return Time.time - gameStartTime;
     }
 
     /// <summary>

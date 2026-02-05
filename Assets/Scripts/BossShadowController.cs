@@ -283,6 +283,10 @@ public class BossShadowController : MonoBehaviour
         isPerformingAction = true;
         actionTimer = currentAction.duration;
 
+        // 【SequenceDebug】输出BossShadow执行动作的时刻和索引（使用相对时间）
+        float relativeTime = GameManager.GetGameElapsedTime();
+        GameLogger.Log($"[SequenceDebug] BossShadow执行动作 - 索引:[{currentActionIndex}] 动作:{currentAction.actionType} 时长:{currentAction.duration}秒 相对时间:+{relativeTime:F2}s", "SequenceDebug");
+
         // 播放对应的动画
         PlayActionAnimation(currentAction.actionType);
 

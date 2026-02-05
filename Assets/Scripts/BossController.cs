@@ -690,6 +690,10 @@ public class BossController : MonoBehaviour
         isPerformingAction = true;
         actionTimer = currentAction.duration;
 
+        // 【SequenceDebug】输出Boss执行动作的时刻和索引（使用相对时间）
+        float relativeTime = GameManager.GetGameElapsedTime();
+        GameLogger.Log($"[SequenceDebug] Boss执行动作 - 索引:[{currentActionIndex}] 动作:{currentAction.actionType} 时长:{currentAction.duration}秒 相对时间:+{relativeTime:F2}s", "SequenceDebug");
+
         // 【关键】在动作开始执行时就更新最远进度，因为此时玩家已经"看到"了这个攻击
         // 只在当前索引超过已记录的最远索引时才更新
         if (currentActionIndex > maxSeenActionIndex)

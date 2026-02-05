@@ -51,17 +51,20 @@ public class PlayerPathRecorder : MonoBehaviour
     /// </summary>
     public void RecordInput(AttackType attackType)
     {
+        // 【关键】记录相对于游戏开始的时间戳，而不是绝对时间
+        float relativeTimestamp = GameManager.GetGameElapsedTime();
+        
         PlayerAction action = new PlayerAction
         {
             attackType = attackType,
-            timestamp = Time.time
+            timestamp = relativeTimestamp
         };
         
         currentSessionInputs.Add(action);
         
         if (showDebugLogs)
         {
-            GameLogger.Log($"[路径记录] 记录玩家输入：{attackType}，当前小局输入数：{currentSessionInputs.Count}", "PathRecorder");
+            GameLogger.Log($"[路径记录] 记录玩家输入：{attackType}，时间戳：+{relativeTimestamp:F2}s，当前小局输入数：{currentSessionInputs.Count}", "PathRecorder");
         }
     }
 

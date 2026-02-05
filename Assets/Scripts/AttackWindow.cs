@@ -137,6 +137,10 @@ public class AttackWindow : MonoBehaviour
 
         hasBeenCountered = true;
         
+        // 【SequenceDebug】记录玩家实际按键的时机（用于对比PlayerShadow播放时机）
+        float relativeTime = GameManager.GetGameElapsedTime();
+        GameLogger.Log($"[SequenceDebug] 玩家实际输入 - 动作:{playerAction} 对应Boss攻击:{attackType} 结果:{AttackRelationship.GetResultDescription(attackResult)} 相对时间:+{relativeTime:F2}s", "SequenceDebug");
+        
         GameLogger.Log($"玩家使用 {playerAction} 对 {attackType} 做出响应，结果: {AttackRelationship.GetResultDescription(attackResult)}", "Combat");
         
         // 根据攻击结果处理伤害
