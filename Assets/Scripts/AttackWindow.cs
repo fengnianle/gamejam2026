@@ -48,6 +48,9 @@ public class AttackWindow : MonoBehaviour
     [Header("场景对象引用")]
     [Tooltip("目标对象（Player对象，通过拖拽赋值）")]
     public GameObject targetObject;
+    
+    [Tooltip("可选：反制成功时播放的Spark特效ParticleSystem（请在Inspector中拖拽赋值）")]
+    public ParticleSystem sparkEffectParticle;
 
     [Header("调试选项")]
     [Tooltip("是否显示调试信息")]
@@ -138,6 +141,12 @@ public class AttackWindow : MonoBehaviour
         
         // 根据攻击结果处理伤害
         HandleDamageByResult(attackResult);
+        
+        // 如果是压制成功，播放Spark特效
+        if (attackResult == AttackRelationship.AttackResult.Counter)
+        {
+            PlaySparkEffect();
+        }
         
         onCounterSuccess?.Invoke(playerAction);
         
@@ -315,6 +324,19 @@ public class AttackWindow : MonoBehaviour
         // 显示窗口状态
         Gizmos.color = isWindowActive ? Color.red : Color.green;
         Gizmos.DrawWireSphere(transform.position, 0.5f);
+    }
+
+    /// <summary>
+    /// 播放Spark特效
+    /// </summary>
+    void PlaySparkEffect()
+    {
+        if (sparkEffectParticle != null)
+        {
+            // 播放粒子特效
+            sparkEffectParticle.Play();
+            GameLogger.Log("播放Spark反制成功特效", "Combat");
+        }
     }
 }
 

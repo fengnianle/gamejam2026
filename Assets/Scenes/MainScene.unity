@@ -858,6 +858,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5700102424857009046, guid: 6f6166d6e843da24681eb8e59e5c18ea, type: 3}
   m_PrefabInstance: {fileID: 238328813}
   m_PrefabAsset: {fileID: 0}
+--- !u!198 &252457884 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 8960011458443234129, guid: af1ee3220d7214b4eb9d9a2bdd96e1ca, type: 3}
+  m_PrefabInstance: {fileID: 2045728615912347551}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &268813933
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -910,6 +915,10 @@ PrefabInstance:
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 637409372}
+    - target: {fileID: 2863036506899183101, guid: 8fcd1276cb27cf14381848700de4bfe5, type: 3}
+      propertyPath: sparkEffectParticle
+      value: 
+      objectReference: {fileID: 252457884}
     - target: {fileID: 3417364387688240678, guid: 8fcd1276cb27cf14381848700de4bfe5, type: 3}
       propertyPath: hpBar
       value: 
@@ -1517,6 +1526,14 @@ PrefabInstance:
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 268813935}
+    - target: {fileID: 5456741115189411642, guid: b4b45ddebc0398f41a9e6ed4ae41f94e, type: 3}
+      propertyPath: sparkEffectParticle
+      value: 
+      objectReference: {fileID: 252457884}
+    - target: {fileID: 6399781107992045138, guid: b4b45ddebc0398f41a9e6ed4ae41f94e, type: 3}
+      propertyPath: sparkEffectParticle
+      value: 
+      objectReference: {fileID: 252457884}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3557,8 +3574,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.06525, y: -0.039249897, z: 0}
-    m_Extent: {x: 1.30575, y: 3.92275, z: 0}
+    m_Center: {x: -1.05785, y: -0.041749954, z: 0}
+    m_Extent: {x: 1.30835, y: 3.91955, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -5302,8 +5319,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.34295, y: 0.5265, z: 0}
-    m_Extent: {x: 1.12195, y: 3.9226, z: 0}
+    m_Center: {x: -1.35605, y: 0.52674997, z: 0}
+    m_Extent: {x: 1.12745, y: 3.9292498, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0

@@ -172,9 +172,18 @@ public class BossController : MonoBehaviour
                 
                 // 获取当前动作的 postIdleTime（包含了基础间隔和额外间隔）
                 float waitTime = 0f;
+                bool shouldPlayShockWave = false;
+                
                 if (currentActionIndex >= 0 && currentActionIndex < actionSequence.Count)
                 {
                     waitTime = actionSequence[currentActionIndex].postIdleTime;
+                    shouldPlayShockWave = actionSequence[currentActionIndex].playShockWaveAfter;
+                }
+                
+                // 如果需要播放冲击波特效，立即播放
+                if (shouldPlayShockWave)
+                {
+                    PlayShockWaveEffect();
                 }
                 
                 // 等待指定时间后执行下一个动作
@@ -300,6 +309,37 @@ public class BossController : MonoBehaviour
         GameLogger.LogAttackWindow("Boss OnAttackWindow End");
         
         attackWindow.EndWindow();
+    }
+
+    /// <summary>
+    /// 触发打击暂停效果（由Animation Event调用）
+    /// 只有当前动作是攻击模式的第一个动作时才会生效
+    /// </summary>
+    public void OnTriggerHitPause()
+    {
+        // 检查当前动作是否是攻击模式的第一个动作
+        if (currentActionIndex >= 0 && currentActionIndex < actionSequence.Count)
+        {
+            BossAction currentAction = actionSequence[currentActionIndex];
+            
+            if (currentAction.isPatternStart && HitPauseManager.Instance != null)
+            {
+                HitPauseManager.Instance.CallHitPause();
+                GameLogger.Log($"攻击模式开始，触发打击暂停效果", "Combat");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 播放冲击波特效
+    /// </summary>
+    void PlayShockWaveEffect()
+    {
+        if (ShockWaveManager.Instance != null)
+        {
+            ShockWaveManager.Instance.CallShockWave();
+            GameLogger.Log("政击模式结杞，播放冲击波特效", "Combat");
+        }
     }
 
     // ==================== 受伤系统 ====================
@@ -534,6 +574,7 @@ public class BossController : MonoBehaviour
 
             // 解析攻击序列字符串
             string upperSequence = pattern.attackSequence.ToUpper();
+            bool isFirstActionInPattern = true;  // 标记是否是当前pattern的第一个动作
             for (int i = 0; i < upperSequence.Length; i++)
             {
                 char c = upperSequence[i];
@@ -564,8 +605,12 @@ public class BossController : MonoBehaviour
                 {
                     actionType = actionType,
                     duration = attackDuration,
-                    postIdleTime = actionInterval  // 默认使用全局 actionInterval
+                    postIdleTime = actionInterval,  // 默认使用全局 actionInterval
+                    isPatternStart = isFirstActionInPattern  // 标记是否为模式开始
                 });
+                
+                // 第一个动作后，后续动作都不是模式开始
+                isFirstActionInPattern = false;
                 
                 // 如果勾选了攻击之间有间隔，且不是最后一个攻击，则覆盖为更长的间隔时间
                 if (pattern.hasIntervalBetweenAttacks && i < upperSequence.Length - 1)
@@ -595,6 +640,12 @@ public class BossController : MonoBehaviour
                 // 将 idleTime 额外加到当前 pattern 最后一个动作的 postIdleTime
                 // 注意：最后一个动作已经有了 actionInterval，现在再加上 idleTime
                 actionSequence[actionSequence.Count - 1].postIdleTime += pattern.idleTime;
+            }
+            
+            // 如果该pattern需要在结束后播放冲击波，标记最后一个动作
+            if (pattern.playShockWaveOnEnd && actionSequence.Count > patternStartIndex)
+            {
+                actionSequence[actionSequence.Count - 1].playShockWaveAfter = true;
             }
         }
 
@@ -830,8 +881,9 @@ public class BossAttackPattern
     public float intervalBetweenAttacks = 0.5f;
     
     [Tooltip("此攻击模式结束后的Idle时间（秒），作为模式之间的间隔")]
-    public float idleTime = 2f;
-}
+    public float idleTime = 2f;    
+    [Tooltip("是否在这个攻击模式结束后播放冲击波特效")]
+    public bool playShockWaveOnEnd = false;}
 
 /// <summary>
 /// Boss动作类型枚举
@@ -858,4 +910,10 @@ public class BossAction
     
     [Tooltip("动作执行完后的额外等待时间（秒），用于攻击模式之间的间隔")]
     public float postIdleTime = 0f;
+    
+    [Tooltip("标记是否为政击模式的第一个动作")]
+    public bool isPatternStart = false;
+    
+    [Tooltip("标记是否在这个动作结束后播放冲击波特效")]
+    public bool playShockWaveAfter = false;
 }

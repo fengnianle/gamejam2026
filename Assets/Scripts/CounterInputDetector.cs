@@ -192,6 +192,8 @@ public class CounterInputDetector : MonoBehaviour
             isInvincible = true;
             invincibilityEndTime = Time.time + invincibilityTime;
             GameLogger.LogInvincibility($"Player压制成功，进入无敌状态，持续 {invincibilityTime} 秒");
+            
+            // Spark特效已在AttackWindow.OnPlayerResponse()中统一播放
         }
 
         // 可以在这里根据结果添加不同的效果：

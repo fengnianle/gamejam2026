@@ -133,14 +133,17 @@ MonoBehaviour:
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
     idleTime: 1
+    playShockWaveOnEnd: 1
   - attackSequence: YYY
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
     idleTime: 1
+    playShockWaveOnEnd: 0
   - attackSequence: BBB
     hasIntervalBetweenAttacks: 0
     intervalBetweenAttacks: 0.5
     idleTime: 1
+    playShockWaveOnEnd: 0
   attackDuration: 1
   actionSequence: []
   loopSequence: 1
@@ -176,4 +179,5 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   targetObject: {fileID: 0}
+  sparkEffectParticle: {fileID: 0}
   showDebugInfo: 1
