@@ -34,6 +34,269 @@ public class UIManager : MonoBehaviour
     [SerializeField] public UnityEvent onDieAndRestartComplete;
     [SerializeField] public UnityEvent onWinComplete;
     
+    #region Audio Interface Methods
+    
+    #region Sound Effect Interface Methods
+    /// <summary>
+    /// 播放Logo出现音效
+    /// </summary>
+    public void PlayLogoAppearSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayLogoAppear();
+        }
+    }
+
+    /// <summary>
+    /// 播放鼓击音效
+    /// </summary>
+    public void PlayDrumHitSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayDrumHit();
+        }
+    }
+
+    /// <summary>
+    /// 播放武士冲刺音效
+    /// </summary>
+    public void PlaySamuraiDashSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySamuraiDash();
+        }
+    }
+
+    /// <summary>
+    /// 播放剑击音效1
+    /// </summary>
+    public void PlaySwordClash1SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash1();
+        }
+    }
+
+    /// <summary>
+    /// 播放剑击音效2
+    /// </summary>
+    public void PlaySwordClash2SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash2();
+        }
+    }
+
+    /// <summary>
+    /// 播放剑击音效3
+    /// </summary>
+    public void PlaySwordClash3SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash3();
+        }
+    }
+
+    /// <summary>
+    /// 播放随机剑击音效
+    /// </summary>
+    public void PlayRandomSwordClashSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayRandomSwordClash();
+        }
+    }
+
+    /// <summary>
+    /// 播放日式鼓音效
+    /// </summary>
+    public void PlayJapaneseDrumSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayJapaneseDrum();
+        }
+    }
+
+    /// <summary>
+    /// 播放重鼓音效
+    /// </summary>
+    public void PlayHeavyDrumSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHeavyDrum();
+        }
+    }
+
+    /// <summary>
+    /// 播放受伤音效
+    /// </summary>
+    public void PlayHurtSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHurt();
+        }
+    }
+
+    /// <summary>
+    /// 播放拔剑音效
+    /// </summary>
+    public void PlaySwordUnsheathSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordUnsheath();
+        }
+    }
+    #endregion
+
+    #region BGM Interface Methods
+    /// <summary>
+    /// 播放背景音乐
+    /// </summary>
+    public void PlayBGM()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBGM();
+        }
+    }
+
+    /// <summary>
+    /// 停止背景音乐
+    /// </summary>
+    public void StopBGM()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopBGM();
+        }
+    }
+
+    /// <summary>
+    /// 淡入背景音乐
+    /// </summary>
+    /// <param name="fadeTime">淡入时间</param>
+    public void FadeInBGM(float fadeTime = 2f)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.FadeInBGM(fadeTime);
+        }
+    }
+
+    /// <summary>
+    /// 淡出背景音乐
+    /// </summary>
+    /// <param name="fadeTime">淡出时间</param>
+    /// <param name="stopAfterFade">淡出后是否停止</param>
+    public void FadeOutBGM(float fadeTime = 2f)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.FadeOutBGM(fadeTime, true);
+        }
+    }
+    #endregion
+
+    #region Background Audio Interface Methods
+    /// <summary>
+    /// 播放森林风声背景音
+    /// </summary>
+    public void PlayForestWindBG()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayForestWind();
+        }
+    }
+
+    /// <summary>
+    /// 停止背景环境音
+    /// </summary>
+    public void StopBackgroundAudio()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopBackgroundAudio();
+        }
+    }
+
+    /// <summary>
+    /// 淡入背景环境音
+    /// </summary>
+    /// <param name="fadeTime">淡入时间</param>
+    public void FadeInBackgroundAudio(float fadeTime = 2f)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.FadeInBackgroundAudio(fadeTime);
+        }
+    }
+
+    /// <summary>
+    /// 淡出背景环境音
+    /// </summary>
+    /// <param name="fadeTime">淡出时间</param>
+    /// <param name="stopAfterFade">淡出后是否停止</param>
+    public void FadeOutBackgroundAudio(float fadeTime = 2f)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.FadeOutBackgroundAudio(fadeTime, true);
+        }
+    }
+    #endregion
+
+    #region Volume Control Interface Methods
+    /// <summary>
+    /// 设置背景音乐音量
+    /// </summary>
+    /// <param name="volume">音量值 (0-1)</param>
+    public void SetBGMVolume(float volume)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetBGMVolume(volume);
+        }
+    }
+
+    /// <summary>
+    /// 设置音效音量
+    /// </summary>
+    /// <param name="volume">音量值 (0-1)</param>
+    public void SetSFXVolume(float volume)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetSFXVolume(volume);
+        }
+    }
+
+    /// <summary>
+    /// 设置背景环境音音量
+    /// </summary>
+    /// <param name="volume">音量值 (0-1)</param>
+    public void SetBackgroundVolume(float volume)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetBackgroundVolume(volume);
+        }
+    }
+    #endregion
+
+    #endregion
+    
     private bool isFirstLaunch = true;
     
     private void Awake()
