@@ -10,11 +10,13 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Animation openingAnimation;
     [SerializeField] private Animation beginningAnimation;
     [SerializeField] private Animation dieAndRestartAnimation;
+    [SerializeField] private Animation winAnimation;
     
     [Header("Animation Settings")]
     [SerializeField] private string openingAnimationName = "OpeningAnimation";
     [SerializeField] private string beginningAnimationName = "BeginningAnimation";
     [SerializeField] private string dieAndRestartAnimationName = "dieAndRestart";
+    [SerializeField] private string winAnimationName = "WinAnimation";
     
     [Header("Wait Time Settings")]
     [SerializeField] private float waitBeforeOpening = 0f;
@@ -23,11 +25,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float waitAfterBeginning = 0f;
     [SerializeField] private float waitBeforeDieAndRestart = 0f;
     [SerializeField] private float waitAfterDieAndRestart = 0f;
+    [SerializeField] private float waitBeforeWin = 0f;
+    [SerializeField] private float waitAfterWin = 0f;
 
     [Header("Events")]
     [SerializeField] public UnityEvent onOpeningComplete;
     [SerializeField] public UnityEvent onBeginningComplete;  // Beginning动画完成事件
     [SerializeField] public UnityEvent onDieAndRestartComplete;
+    [SerializeField] public UnityEvent onWinComplete;
     
     private bool isFirstLaunch = true;
     
@@ -60,6 +65,12 @@ public class UIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F5))
         {
             PlayDieAndRestartAnimation();
+        }
+        
+        // 检测F6键按下
+        if (Input.GetKeyDown(KeyCode.F6))
+        {
+            PlayWinAnimation();
         }
     }
     
@@ -135,6 +146,14 @@ public class UIManager : MonoBehaviour
         StartCoroutine(DieAndRestartCoroutine());
     }
     
+    /// <summary>
+    /// 播放Win动画
+    /// </summary>
+    public void PlayWinAnimation()
+    {
+        StartCoroutine(WinCoroutine());
+    }
+    
     private IEnumerator StartupSequenceCoroutine()
     {
         // 等待Opening动画前的等待时间
@@ -187,6 +206,27 @@ public class UIManager : MonoBehaviour
         
         // 触发DieAndRestart完成事件
         onDieAndRestartComplete?.Invoke();
+    }
+    
+    private IEnumerator WinCoroutine()
+    {
+        // 等待Win动画前的等待时间
+        yield return new WaitForSeconds(waitBeforeWin);
+        
+        // 播放Win动画
+        if (winAnimation != null)
+        {
+            winAnimation.Play(winAnimationName);
+            
+            // 等待动画播放完毕
+            yield return new WaitForSeconds(GetAnimationLength(winAnimation, winAnimationName));
+        }
+        
+        // 等待Win动画后的等待时间
+        yield return new WaitForSeconds(waitAfterWin);
+        
+        // 触发Win完成事件
+        onWinComplete?.Invoke();
     }
     
     private float GetAnimationLength(Animation animation, string animationName)
