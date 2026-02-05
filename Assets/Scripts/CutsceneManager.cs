@@ -226,6 +226,9 @@ public class CutsceneManager : MonoBehaviour
         
         isPlayingCutscene = false;
         
+        // 【关键】确保角色Animator已启用（防止演出中被禁用）
+        EnableCharacterAnimators();
+        
         // 通知GameManager比赛开始演出已完成
         if (GameManager.Instance != null)
         {

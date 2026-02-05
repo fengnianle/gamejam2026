@@ -23,12 +23,12 @@ using System.Collections.Generic;
 public class BossShadowController : MonoBehaviour
 {
     /// <summary>
-    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// ! 必须拖拽赋值的场景对象引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("! 场景对象引用 - 必须手动拖拽赋值 !")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：跟随的Boss控制器（请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：跟随的Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
 
     /// <summary>
@@ -235,6 +235,7 @@ public class BossShadowController : MonoBehaviour
     
     /// <summary>
     /// 从Boss控制器复制动作序列
+    /// 只复制玩家看到过的动作（根据 maxSeenActionIndex）
     /// </summary>
     void CopyShadowSequenceFromBoss()
     {
@@ -245,9 +246,22 @@ public class BossShadowController : MonoBehaviour
             return;
         }
 
-        // 深度复制动作序列（避免引用同一个对象）
-        foreach (var action in bossController.actionSequence)
+        // 获取玩家看到过的最远索引
+        int maxSeenIndex = bossController.GetMaxSeenActionIndex();
+        
+        // 如果玩家还未看到任何政击（maxSeenIndex == -1），则不复制任何动作
+        if (maxSeenIndex < 0)
         {
+            GameLogger.LogBossAttackPath("玩家还未看到任何Boss攻击，影子不播放任何动作");
+            return;
+        }
+        
+        // 只复制到 maxSeenIndex 的动作（包含 maxSeenIndex）
+        int copyCount = Mathf.Min(maxSeenIndex + 1, bossController.actionSequence.Count);
+        
+        for (int i = 0; i < copyCount; i++)
+        {
+            var action = bossController.actionSequence[i];
             shadowActionSequence.Add(new BossAction
             {
                 actionType = action.actionType,
@@ -255,7 +269,7 @@ public class BossShadowController : MonoBehaviour
             });
         }
         
-        GameLogger.Log($"BossShadow: 已复制Boss动作序列，共{shadowActionSequence.Count}个动作", "BossShadow");
+        GameLogger.LogBossAttackPath($"影子已复制Boss动作序列，共{shadowActionSequence.Count}个动作（最远索引: {maxSeenIndex + 1}）");
     }
 
     /// <summary>
@@ -287,19 +301,9 @@ public class BossShadowController : MonoBehaviour
         // 检查是否到达序列末尾
         if (currentActionIndex >= shadowActionSequence.Count)
         {
-            // 检查Boss是否循环播放
-            bool loopSequence = bossController != null && bossController.loopSequence;
-            
-            if (loopSequence)
-            {
-                currentActionIndex = 0;
-                ExecuteCurrentAction();
-            }
-            else
-            {
-                GameLogger.Log("BossShadow: 动作序列播放完成", "BossShadow");
-                StopShadowSequence();
-            }
+            // 影子系统不循环播放，播放完所有看到过的动作后停留在Idle
+            GameLogger.Log("BossShadow: 动作序列播放完成，停留在Idle状态", "BossShadow");
+            StopShadowSequence();
         }
         else
         {
@@ -326,7 +330,10 @@ public class BossShadowController : MonoBehaviour
 
         if (ComponentValidator.ValidateAndLogClip(clipToPlay, actionType.ToString(), "BossShadow"))
         {
-            animator.Play(clipToPlay.name);
+            // 【关键】强制从头开始播放动画，即使是相同的动画状态
+            // 参数: (stateName, layer, normalizedTime)
+            // -1 表示默认层，0f 表示从动画的0%位置开始播放
+            animator.Play(clipToPlay.name, -1, 0f);
         }
     }
 

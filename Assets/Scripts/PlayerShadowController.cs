@@ -24,12 +24,12 @@ using System.Collections.Generic;
 public class PlayerShadowController : MonoBehaviour
 {
     /// <summary>
-    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// ! 必须拖拽赋值的场景对象引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("! 场景对象引用 - 必须手动拖拽赋值 !")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：玩家路径记录器（请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：玩家路径记录器（请在Inspector中拖拽赋值）")]
     public PlayerPathRecorder pathRecorder;
 
     /// <summary>
@@ -351,7 +351,10 @@ public class PlayerShadowController : MonoBehaviour
 
         if (ComponentValidator.ValidateAndLogClip(clipToPlay, attackType.ToString(), "PlayerShadow"))
         {
-            animator.Play(clipToPlay.name);
+            // 【关键】强制从头开始播放动画，即使是相同的动画状态
+            // 参数: (stateName, layer, normalizedTime)
+            // -1 表示默认层，0f 表示从动画的0%位置开始播放
+            animator.Play(clipToPlay.name, -1, 0f);
         }
     }
 

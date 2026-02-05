@@ -111,6 +111,12 @@ public class GameManager : MonoBehaviour
         GameLogger.Log("玩家死亡，游戏失败", "GameManager");
         ChangeState(GameState.Defeat);
         
+        // 通知BossController记录玩家看到的最远进度
+        if (bossController != null)
+        {
+            bossController.OnPlayerDeath();
+        }
+        
         // 播放dieAndRestart动画
         if (uiManager != null)
         {
@@ -239,6 +245,8 @@ public class GameManager : MonoBehaviour
         if (bossController != null)
         {
             bossController.ResetState();
+            // EndGame时完全重置Boss的最远进度记录
+            bossController.ResetMaxSeenProgress();
         }
         
         // 重置Player影子

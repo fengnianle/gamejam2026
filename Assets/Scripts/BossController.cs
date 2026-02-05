@@ -10,12 +10,12 @@ using System.Collections.Generic;
 public class BossController : MonoBehaviour
 {
     /// <summary>
-    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// ! 必须拖拽赋值的场景对象引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("! 场景对象引用 - 必须手动拖拽赋值 !")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：Boss血条UI（请在Inspector中拖拽赋值）")]
     public HPBar hpBar;
     
     [Tooltip("可选：Boss的影子控制器（用于预判系统）")]
@@ -96,6 +96,14 @@ public class BossController : MonoBehaviour
     private bool isPlaying = false;
     [Tooltip("当前动作执行的倒计时")]
     private float actionTimer = 0f;
+    
+    /// <summary>
+    /// 玩家看到过的最远攻击动作索引（用于影子系统）
+    /// -1 表示玩家还未看到任何攻击
+    /// </summary>
+    [Header("进度记录")]
+    [Tooltip("玩家看到过的最远攻击动作索引（持久化，Restart时保留）")]
+    private int maxSeenActionIndex = -1;
 
     /// <summary> ----------------------------------------- 生命周期 ----------------------------------------- </summary>
     void Awake()
@@ -162,8 +170,22 @@ public class BossController : MonoBehaviour
             {
                 isPerformingAction = false;
                 
-                // 等待间隔时间后执行下一个动作
-                Invoke(nameof(ExecuteNextAction), actionInterval);
+                // 获取当前动作的 postIdleTime（包含了基础间隔和额外间隔）
+                float waitTime = 0f;
+                if (currentActionIndex >= 0 && currentActionIndex < actionSequence.Count)
+                {
+                    waitTime = actionSequence[currentActionIndex].postIdleTime;
+                }
+                
+                // 等待指定时间后执行下一个动作
+                if (waitTime > 0)
+                {
+                    Invoke(nameof(ExecuteNextAction), waitTime);
+                }
+                else
+                {
+                    ExecuteNextAction();
+                }
             }
         }
     }
@@ -179,10 +201,12 @@ public class BossController : MonoBehaviour
         // 重新启用组件（死亡时会被禁用）
         enabled = true;
         
-        // 恢复animator速度（如果死亡时被修改）
+        // 恢复animator状态（如果死亡或演出时被修改）
         if (animator != null)
         {
+            animator.enabled = true;  // 确保Animator启用
             animator.speed = 1f;
+            GameLogger.Log($"已重置Animator状态: enabled={animator.enabled}, speed={animator.speed}", "BossController");
         }
         
         // 取消所有延迟调用
@@ -193,6 +217,9 @@ public class BossController : MonoBehaviour
         isPerformingAction = false;
         currentActionIndex = 0;
         actionTimer = 0f;
+        
+        // 注意：maxSeenActionIndex 不在这里重置
+        // Restart时应该保留玩家看到过的最远进度
         
         // 重置生命值
         if (characterStats != null)
@@ -309,6 +336,27 @@ public class BossController : MonoBehaviour
     public void OnPlayerDeath()
     {
         GameLogger.LogBossAction("玩家已死亡，停止攻击序列");
+        
+        // 记录玩家死亡时看到的最远攻击索引
+        // currentActionIndex 表示Boss当前执行到的动作，只要索引有效就记录
+        if (currentActionIndex >= 0 && currentActionIndex < actionSequence.Count)
+        {
+            // 更新最远进度（只记录更远的进度）
+            if (currentActionIndex > maxSeenActionIndex)
+            {
+                maxSeenActionIndex = currentActionIndex;
+                GameLogger.LogBossAttackPath($"记录玩家看到的最远攻击索引: {maxSeenActionIndex + 1} (动作: {actionSequence[currentActionIndex].actionType})");
+            }
+            else
+            {
+                GameLogger.LogBossAttackPath($"当前索引 {currentActionIndex + 1} 未超过已记录的最远索引 {maxSeenActionIndex + 1}，不更新");
+            }
+        }
+        else
+        {
+            GameLogger.LogBossAttackPath($"索引无效，无法记录进度 (current: {currentActionIndex}, total: {actionSequence.Count})");
+        }
+        
         StopSequence();
         
         // 播放胜利动画或待机动画
@@ -368,6 +416,17 @@ public class BossController : MonoBehaviour
     /// </summary>
     void StartBossSequence()
     {
+        // 【关键】确保Animator是启用状态（防止CutsceneManager禁用后未恢复）
+        if (animator != null)
+        {
+            if (!animator.enabled)
+            {
+                GameLogger.LogWarning("检测到Animator被禁用，正在重新启用", "BossController");
+                animator.enabled = true;
+            }
+            GameLogger.Log($"Animator状态检查: enabled={animator.enabled}", "BossController");
+        }
+        
         ExecuteCurrentAction();
         GameLogger.Log("Boss序列已启动", "BossController");
     }
@@ -409,6 +468,23 @@ public class BossController : MonoBehaviour
         }
         
         GameLogger.LogBossAction("Boss强制进入Idle状态");
+    }
+    
+    /// <summary>
+    /// 获取玩家看到过的最远攻击动作索引（供 BossShadowController 使用）
+    /// </summary>
+    public int GetMaxSeenActionIndex()
+    {
+        return maxSeenActionIndex;
+    }
+    
+    /// <summary>
+    /// 重置最远进度记录（EndGame时调用）
+    /// </summary>
+    public void ResetMaxSeenProgress()
+    {
+        maxSeenActionIndex = -1;
+        GameLogger.LogBossAttackPath("已重置Boss最远进度记录");
     }
 
     /// <summary> ----------------------------------------- Private ----------------------------------------- </summary>
@@ -453,6 +529,9 @@ public class BossController : MonoBehaviour
                 continue;
             }
 
+            // 记录当前 pattern 的起始索引
+            int patternStartIndex = actionSequence.Count;
+
             // 解析攻击序列字符串
             string upperSequence = pattern.attackSequence.ToUpper();
             for (int i = 0; i < upperSequence.Length; i++)
@@ -484,10 +563,11 @@ public class BossController : MonoBehaviour
                 actionSequence.Add(new BossAction
                 {
                     actionType = actionType,
-                    duration = attackDuration
+                    duration = attackDuration,
+                    postIdleTime = actionInterval  // 默认使用全局 actionInterval
                 });
                 
-                // 如果勾选了攻击之间有间隔，且不是最后一个攻击，则添加短暂的间隔
+                // 如果勾选了攻击之间有间隔，且不是最后一个攻击，则覆盖为更长的间隔时间
                 if (pattern.hasIntervalBetweenAttacks && i < upperSequence.Length - 1)
                 {
                     // 检查下一个字符是否也是有效的攻击字符
@@ -503,27 +583,22 @@ public class BossController : MonoBehaviour
                     
                     if (hasNextAttack)
                     {
-                        actionSequence.Add(new BossAction
-                        {
-                            actionType = BossActionType.Idle,
-                            duration = pattern.intervalBetweenAttacks
-                        });
+                        // 覆盖为 actionInterval + intervalBetweenAttacks
+                        actionSequence[actionSequence.Count - 1].postIdleTime = actionInterval + pattern.intervalBetweenAttacks;
                     }
                 }
             }
 
-            // 在每个pattern结束后添加Idle间隔（作为模式之间的间隔）
-            if (pattern.idleTime > 0)
+            // 在当前 pattern 的最后一个动作上额外添加 idleTime
+            if (pattern.idleTime > 0 && actionSequence.Count > patternStartIndex)
             {
-                actionSequence.Add(new BossAction
-                {
-                    actionType = BossActionType.Idle,
-                    duration = pattern.idleTime
-                });
+                // 将 idleTime 额外加到当前 pattern 最后一个动作的 postIdleTime
+                // 注意：最后一个动作已经有了 actionInterval，现在再加上 idleTime
+                actionSequence[actionSequence.Count - 1].postIdleTime += pattern.idleTime;
             }
         }
 
-        GameLogger.Log($"BossController: 成功生成动作序列，共 {actionSequence.Count} 个动作。", "BossController");
+        GameLogger.Log($"BossController: 成功生成动作序列，共 {actionSequence.Count} 个动作（仅包含攻击动作）。", "BossController");
     }
 
     // ==================== 动作序列控制 ====================
@@ -563,6 +638,14 @@ public class BossController : MonoBehaviour
         BossAction currentAction = actionSequence[currentActionIndex];
         isPerformingAction = true;
         actionTimer = currentAction.duration;
+
+        // 【关键】在动作开始执行时就更新最远进度，因为此时玩家已经"看到"了这个攻击
+        // 只在当前索引超过已记录的最远索引时才更新
+        if (currentActionIndex > maxSeenActionIndex)
+        {
+            maxSeenActionIndex = currentActionIndex;
+            GameLogger.LogBossAttackPath($"实时更新最远攻击索引: {maxSeenActionIndex + 1} (动作: {currentAction.actionType})");
+        }
 
         // 播放对应的动画
         PlayActionAnimation(currentAction.actionType);
@@ -605,7 +688,17 @@ public class BossController : MonoBehaviour
     /// </summary>
     void PlayActionAnimation(BossActionType actionType)
     {
-        if (animator == null) return;
+        if (animator == null)
+        {
+            GameLogger.LogError("Animator为null，无法播放动画！", "BossController");
+            return;
+        }
+        
+        if (!animator.enabled)
+        {
+            GameLogger.LogError($"Animator被禁用，无法播放动画！actionType={actionType}", "BossController");
+            return;
+        }
 
         AnimationClip clipToPlay = actionType switch
         {
@@ -618,7 +711,11 @@ public class BossController : MonoBehaviour
 
         if (ComponentValidator.ValidateAndLogClip(clipToPlay, actionType.ToString(), "BossController"))
         {
-            animator.Play(clipToPlay.name);
+            // 【关键】强制从头开始播放动画，即使是相同的动画状态
+            // 参数: (stateName, layer, normalizedTime)
+            // -1 表示默认层，0f 表示从动画的0%位置开始播放
+            animator.Play(clipToPlay.name, -1, 0f);
+            GameLogger.Log($"已调用animator.Play({clipToPlay.name}, -1, 0f) 强制从头播放", "BossController");
         }
     }
 
@@ -758,4 +855,7 @@ public class BossAction
     
     [Tooltip("动作持续时间（秒）")]
     public float duration = 1f;
+    
+    [Tooltip("动作执行完后的额外等待时间（秒），用于攻击模式之间的间隔")]
+    public float postIdleTime = 0f;
 }

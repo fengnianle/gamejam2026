@@ -83,6 +83,9 @@ public class GameLogger : MonoBehaviour
     
     [Tooltip("Boss行为和AI日志")]
     public bool logBossAction = true;
+    
+    [Tooltip("Boss攻击路径记录日志（影子系统进度记录）")]
+    public bool logBossAttackPath = true;
 
     [Header("=== 组件验证日志 ===")]
     [Tooltip("组件绑定验证日志（警告和错误）")]
@@ -262,6 +265,17 @@ public class GameLogger : MonoBehaviour
         if (Instance.enableLogging && Instance.logBossAction)
         {
             Debug.Log($"<color=purple>[Boss]</color> {action}");
+        }
+    }
+    
+    /// <summary>
+    /// Boss攻击路径记录日志（影子系统相关）
+    /// </summary>
+    public static void LogBossAttackPath(string message)
+    {
+        if (Instance.enableLogging && Instance.logBossAttackPath)
+        {
+            Debug.Log($"<color=magenta>[BossAttackPath]</color> {message}");
         }
     }
 

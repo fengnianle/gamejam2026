@@ -10,18 +10,18 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
-    /// ⚠️ 必须拖拽赋值的场景对象引用
+    /// ! 必须拖拽赋值的场景对象引用
     /// </summary>
     [Space(10)]
-    [Header("⚠️ 场景对象引用 - 必须手动拖拽赋值 ⚠️")]
+    [Header("! 场景对象引用 - 必须手动拖拽赋值 !")]
     [Space(5)]
-    [Tooltip("⚠️ 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：玩家血条UI（请在Inspector中拖拽赋值）")]
     public HPBar hpBar;
     
-    [Tooltip("⚠️ 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：Boss控制器（请在Inspector中拖拽赋值）")]
     public BossController bossController;
     
-    [Tooltip("⚠️ 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
+    [Tooltip("! 必须赋值：玩家路径记录器（用于影子系统，请在Inspector中拖拽赋值）")]
     public PlayerPathRecorder pathRecorder;
     
     [Tooltip("可选：玩家影子控制器（用于影子系统）")]
