@@ -21,6 +21,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip swordUnsheathSFX;
     [SerializeField] private AudioClip heavyDrumSFX;
     [SerializeField] private AudioClip hurtSFX;
+    [SerializeField] private AudioClip konamiCodeSFX;
 
     [Header("Background Music")]
     [SerializeField] private AudioClip gameBGM;
@@ -156,6 +157,11 @@ public class AudioManager : MonoBehaviour
     public void PlaySwordUnsheath()
     {
         PlaySFX(swordUnsheathSFX);
+    }
+
+    public void PlayKonamiCodeSound()
+    {
+        PlaySFX(konamiCodeSFX);
     }
 
     private void PlaySFX(AudioClip clip)

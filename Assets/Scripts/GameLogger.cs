@@ -279,6 +279,20 @@ public class GameLogger : MonoBehaviour
         }
     }
 
+    // ==================== 彩蛋日志 ====================
+    
+    /// <summary>
+    /// 彩蛋日志
+    /// </summary>
+    public static void LogCheat(string message)
+    {
+        if (Instance.enableLogging && Instance.logInfo)
+        {
+             // 使用彩色的日志标签
+             Debug.Log($"<color=orange><b>[KonamiCode]</b></color> {message}");
+        }
+    }
+
     // ==================== 组件验证日志 ====================
     
     /// <summary>

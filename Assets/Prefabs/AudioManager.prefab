@@ -57,6 +57,7 @@ MonoBehaviour:
   swordUnsheathSFX: {fileID: 8300000, guid: 0ebf98ccffd76874da7d648109b7a64e, type: 3}
   heavyDrumSFX: {fileID: 8300000, guid: c33a03c7c9ec5bc4a82c837eeefe582a, type: 3}
   hurtSFX: {fileID: 8300000, guid: ee18bd1675e01764ab0d540beee5a24b, type: 3}
+  konamiCodeSFX: {fileID: 8300000, guid: 0ebf98ccffd76874da7d648109b7a64e, type: 3}
   gameBGM: {fileID: 8300000, guid: 7e123dc6552affe4b94f2dc9266c0fee, type: 3}
   forestWindBG: {fileID: 8300000, guid: dc282e3cccb9da540b23eedbf45785ed, type: 3}
   bgmVolume: 0.6

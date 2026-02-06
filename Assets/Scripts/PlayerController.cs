@@ -64,6 +64,9 @@ public class PlayerController : MonoBehaviour
     [Header("调试选项")]
     [Tooltip("启用自动反制（用于调试测试，勾选后会自动执行正确的反制动作）")]
     public bool autoCounterEnabled = false;
+
+    // 彩蛋控制引用
+    private KonamiCodeDetector cheatDetector;
     
     /// <summary>
     /// 组件获取
@@ -97,6 +100,20 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         attackWindow = GetComponent<AttackWindow>();
         counterDetector = GetComponent<CounterInputDetector>();
+        
+        // 自动挂载彩蛋检测器（如果在同一对象上）或尝试创建它
+        cheatDetector = GetComponent<KonamiCodeDetector>();
+        if (cheatDetector == null)
+        {
+            // 如果不存在，我们可以选择动态添加，或者只是在这里保留接口
+            // 为了方便管理，我们动态添加这个组件，并设置引用
+            cheatDetector = gameObject.AddComponent<KonamiCodeDetector>();
+            cheatDetector.playerController = this;
+        }
+        else if (cheatDetector.playerController == null)
+        {
+            cheatDetector.playerController = this;
+        }
     }
 
     void Start()
