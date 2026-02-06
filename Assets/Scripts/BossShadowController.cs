@@ -124,11 +124,29 @@ public class BossShadowController : MonoBehaviour
             {
                 isPerformingAction = false;
                 
-                // 获取Boss的动作间隔时间
-                float actionInterval = bossController != null ? bossController.actionInterval : 1f;
+                // 【关键】获取当前动作的 postIdleTime（包含了基础间隔和额外间隔）
+                float waitTime = 0f;
                 
-                // 等待间隔时间后执行下一个动作
-                Invoke(nameof(ExecuteNextAction), actionInterval);
+                if (currentActionIndex >= 0 && currentActionIndex < shadowActionSequence.Count)
+                {
+                    waitTime = shadowActionSequence[currentActionIndex].postIdleTime;
+                }
+                
+                // 如果有等待时间，播放Idle动画
+                if (waitTime > 0)
+                {
+                    PlayIdleAnimation();
+                }
+                
+                // 等待指定时间后执行下一个动作
+                if (waitTime > 0)
+                {
+                    Invoke(nameof(ExecuteNextAction), waitTime);
+                }
+                else
+                {
+                    ExecuteNextAction();
+                }
             }
         }
     }
@@ -265,7 +283,10 @@ public class BossShadowController : MonoBehaviour
             shadowActionSequence.Add(new BossAction
             {
                 actionType = action.actionType,
-                duration = action.duration
+                duration = action.duration,
+                postIdleTime = action.postIdleTime,  // 【关键】复制动作后的等待时间
+                isPatternStart = action.isPatternStart,
+                playShockWaveAfter = action.playShockWaveAfter
             });
         }
         
