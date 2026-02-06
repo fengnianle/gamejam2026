@@ -67,6 +67,8 @@ MonoBehaviour:
   midHealthColor: {r: 1, g: 1, b: 1, a: 1}
   lowHealthThreshold: 0.3
   midHealthThreshold: 0.6
+  minFillAmount: 0
+  maxFillAmount: 1
 --- !u!1 &2875736587392329658
 GameObject:
   m_ObjectHideFlags: 0

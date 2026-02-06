@@ -47,6 +47,15 @@ public class HPBar : MonoBehaviour
     [Range(0f, 1f)]
     public float midHealthThreshold = 0.6f;
 
+    [Header("视觉修正 (解决边缘毛边问题)")]
+    [Tooltip("逻辑血量为0%时，UI实际显示的Fill Amount值")]
+    [Range(0f, 1f)]
+    public float minFillAmount = 0f;
+
+    [Tooltip("逻辑血量为100%时，UI实际显示的Fill Amount值")]
+    [Range(0f, 1f)]
+    public float maxFillAmount = 1f;
+
     void Start()
     {
         // 验证组件
@@ -64,7 +73,7 @@ public class HPBar : MonoBehaviour
         }
 
         // 初始化血条
-        fillImage.fillAmount = 1f;
+        fillImage.fillAmount = maxFillAmount;
         fillImage.color = normalColor;
         
         GameLogger.Log($"HPBar初始化: fillAmount = {fillImage.fillAmount}, color = {fillImage.color}", "HPBar");
@@ -79,16 +88,19 @@ public class HPBar : MonoBehaviour
     {
         if (fillImage == null) return;
 
-        // 计算血量百分比
-        float healthPercent = Mathf.Clamp01(currentHP / maxHP);
+        // 1. 计算逻辑上的血量百分比 (0.0 - 1.0)
+        float logicalHealthPercent = Mathf.Clamp01(currentHP / maxHP);
         
-        // 直接设置血条填充量
-        fillImage.fillAmount = healthPercent;
+        // 2. 将逻辑百分比映射到视觉FillAmount范围 (minFillAmount - maxFillAmount)
+        float visualFillAmount = Mathf.Lerp(minFillAmount, maxFillAmount, logicalHealthPercent);
         
-        GameLogger.Log($"HPBar.UpdateHP: currentHP={currentHP}, maxHP={maxHP}, healthPercent={healthPercent}, fillAmount={fillImage.fillAmount}", "HPBar");
+        // 3. 应用视觉值
+        fillImage.fillAmount = visualFillAmount;
+        
+        GameLogger.Log($"HPBar.UpdateHP: currentHP={currentHP}, logicPercent={logicalHealthPercent}, visualFill={visualFillAmount}", "HPBar");
 
-        // 根据血量百分比改变颜色
-        UpdateColor(healthPercent);
+        // 4. 计算颜色 (颜色应该依然根据真实的逻辑百分比来变，而不是视觉百分比)
+        UpdateColor(logicalHealthPercent);
     }
 
     /// <summary>
@@ -98,12 +110,14 @@ public class HPBar : MonoBehaviour
     {
         if (fillImage == null) return;
 
-        float healthPercent = Mathf.Clamp01(currentHP / maxHP);
-        fillImage.fillAmount = healthPercent;
+        float logicalHealthPercent = Mathf.Clamp01(currentHP / maxHP);
+        float visualFillAmount = Mathf.Lerp(minFillAmount, maxFillAmount, logicalHealthPercent);
         
-        GameLogger.Log($"HPBar.SetHP: currentHP={currentHP}, maxHP={maxHP}, healthPercent={healthPercent}, fillAmount={fillImage.fillAmount}", "HPBar");
+        fillImage.fillAmount = visualFillAmount;
         
-        UpdateColor(healthPercent);
+        GameLogger.Log($"HPBar.SetHP: currentHP={currentHP}, visualFill={visualFillAmount}", "HPBar");
+        
+        UpdateColor(logicalHealthPercent);
     }
 
     /// <summary>
@@ -162,7 +176,7 @@ public class HPBar : MonoBehaviour
         // 确保在编辑器模式下（非运行时）重置血条状态
         if (!Application.isPlaying && fillImage != null)
         {
-            fillImage.fillAmount = 1f;
+            fillImage.fillAmount = maxFillAmount;
             fillImage.color = normalColor;
         }
     }
