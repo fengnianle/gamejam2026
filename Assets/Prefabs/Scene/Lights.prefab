@@ -50,7 +50,7 @@ MonoBehaviour:
   m_LightType: 1
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9716981, g: 0.8675476, b: 0.53626734, a: 1}
   m_Intensity: 0.75
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.063, y: -0.036649942, z: 0}
-    m_Extent: {x: 1.3113, y: 3.92505, z: 0}
+    m_Center: {x: -1.0618, y: -0.03460002, z: 0}
+    m_Extent: {x: 1.3145001, y: 3.921, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -201,7 +201,7 @@ MonoBehaviour:
   m_LightType: 1
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9716981, g: 0.8675476, b: 0.53626734, a: 1}
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
@@ -219,8 +219,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.3481001, y: 0.53215003, z: 0}
-    m_Extent: {x: 1.1228, y: 3.92255, z: 0}
+    m_Center: {x: -1.34455, y: 0.52699995, z: 0}
+    m_Extent: {x: 1.13035, y: 3.9245, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -347,20 +347,32 @@ PrefabInstance:
     m_TransformParent: {fileID: 1146505710631914736}
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.b
+      value: 0.53626734
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.g
+      value: 0.8675476
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.r
+      value: 0.9716981
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.66865
+      value: -1.6791
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.18999994
+      value: 0.19209993
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 1.15355
+      value: 1.1471
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.8747997
+      value: 3.8870997
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[0].x
@@ -473,20 +485,32 @@ PrefabInstance:
     m_TransformParent: {fileID: 1146505710631914736}
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.b
+      value: 0.53626734
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.g
+      value: 0.8675476
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.r
+      value: 0.9716981
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.3048
+      value: -1.30665
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.20235002
+      value: 0.21724987
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 2.0377
+      value: 2.0334501
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.89745
+      value: 3.89955
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[2].x
@@ -583,20 +607,32 @@ PrefabInstance:
     m_TransformParent: {fileID: 1146505710631914736}
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.b
+      value: 0.53626734
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.g
+      value: 0.8675476
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
+      propertyPath: m_Color.r
+      value: 0.9716981
+      objectReference: {fileID: 0}
+    - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.2639999
+      value: -1.26845
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.1983999
+      value: 0.19955003
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 1.9956
+      value: 1.9985499
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.8909998
+      value: 3.89355
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[2].x
