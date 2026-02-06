@@ -155,23 +155,27 @@ public class AttackWindow : MonoBehaviour
         // 根据攻击结果处理伤害
         HandleDamageByResult(attackResult);
         
-        // 如果是压制成功，播放Spark特效
+        // 如果是压制成功，处理特效与音效（支持延迟）
         if (attackResult == AttackRelationship.AttackResult.Counter)
         {
-            PlaySparkEffect();
-
-            // 播放此处的攻击音效
-             if (AudioManager.Instance != null)
+            float delay = 0f;
+            if (GameManager.Instance != null)
             {
-                // 播放Boss的攻击音效
-                AudioManager.Instance.PlayAttackSound(attackType);
-
-                // 播放Player的攻击音效
-                // 尝试将 playerAction 字符串转换为 AttackType 枚举
-                if (System.Enum.TryParse(playerAction, out AttackType playerAttackType))
+                switch (attackType)
                 {
-                    AudioManager.Instance.PlayAttackSound(playerAttackType);
+                    case AttackType.AttackX: delay = GameManager.Instance.bossDelayAttackX; break;
+                    case AttackType.AttackY: delay = GameManager.Instance.bossDelayAttackY; break;
+                    case AttackType.AttackB: delay = GameManager.Instance.bossDelayAttackB; break;
                 }
+            }
+
+            if (delay > 0f)
+            {
+                StartCoroutine(PlayCounterFeedbackDelayed(delay, playerAction));
+            }
+            else
+            {
+                PlayCounterFeedback(playerAction);
             }
         }
         
@@ -179,6 +183,37 @@ public class AttackWindow : MonoBehaviour
         
         // 立即结束窗口
         EndWindow();
+    }
+    
+    /// <summary>
+    /// 延迟播放反制反馈
+    /// </summary>
+    private System.Collections.IEnumerator PlayCounterFeedbackDelayed(float delay, string playerAction)
+    {
+        yield return new WaitForSeconds(delay);
+        PlayCounterFeedback(playerAction);
+    }
+
+    /// <summary>
+    /// 播放反制反馈（特效+音效）
+    /// </summary>
+    private void PlayCounterFeedback(string playerAction)
+    {
+        PlaySparkEffect();
+
+        // 播放此处的攻击音效
+        if (AudioManager.Instance != null)
+        {
+            // 播放Boss的攻击音效
+            AudioManager.Instance.PlayAttackSound(attackType);
+
+            // 播放Player的攻击音效
+            // 尝试将 playerAction 字符串转换为 AttackType 枚举
+            if (System.Enum.TryParse(playerAction, out AttackType playerAttackType))
+            {
+                AudioManager.Instance.PlayAttackSound(playerAttackType);
+            }
+        }
     }
     
     /// <summary>

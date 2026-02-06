@@ -43,6 +43,14 @@ public class GameManager : MonoBehaviour
     [Tooltip("可选：Boss影子控制器（用于影子系统）")]
     public BossShadowController bossShadowController;
 
+    [Header("战斗参数配置")]
+    [Tooltip("Boss AttackX 动作下反制特效与音效的延迟时间（秒）")]
+    public float bossDelayAttackX = 0f;
+    [Tooltip("Boss AttackY 动作下反制特效与音效的延迟时间（秒）")]
+    public float bossDelayAttackY = 0f;
+    [Tooltip("Boss AttackB 动作下反制特效与音效的延迟时间（秒）")]
+    public float bossDelayAttackB = 0f;
+
     /// <summary>
     /// UI元素引用
     /// </summary>

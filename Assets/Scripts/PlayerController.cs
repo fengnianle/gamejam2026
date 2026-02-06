@@ -635,6 +635,12 @@ public class PlayerController : MonoBehaviour
         
         // 取消所有待执行的Invoke回调（防止攻击动画结束后的回调触发）
         CancelInvoke();
+
+        // 立即停止影子播放，防止影子还在继续攻击
+        if (shadowController != null)
+        {
+            shadowController.StopShadowSequence();
+        }
         
         // 立即禁用玩家输入，防止死亡动画被打断
         canAcceptInput = false;
