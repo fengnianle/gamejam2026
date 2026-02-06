@@ -533,7 +533,12 @@ public class CutsceneManager : MonoBehaviour
 
 	public void PlayHitPause()
 	{
-		HitPauseManager.Instance.CallHitPause(0.5f);
+		HitPauseManager.Instance.CallHitPause(0.5f,0.5f);
+	}
+
+	public void PlayFinalHitPause()
+	{
+		HitPauseManager.Instance.CallHitPause(0.52f,0.4f);
 	}
 
 	public void CameraToMinSize()

@@ -68,8 +68,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.0539, y: -0.03489995, z: 0}
-    m_Extent: {x: 1.3058, y: 3.9133, z: 0}
+    m_Center: {x: -1.063, y: -0.036649942, z: 0}
+    m_Extent: {x: 1.3113, y: 3.92505, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -99,9 +99,9 @@ MonoBehaviour:
   targetLight: {fileID: 6329900323031352170}
   flickerMode: 2
   enableFlicker: 1
-  minIntensity: 0.5
-  maxIntensity: 1
-  originalIntensity: 0.75
+  minIntensity: 0.15
+  maxIntensity: 0.5
+  originalIntensity: 0.35
   flickerSpeed: 0.1
   randomInterval: 1
   pulseDuration: 1
@@ -219,8 +219,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -1.34385, y: 0.53174996, z: 0}
-    m_Extent: {x: 1.12845, y: 3.93065, z: 0}
+    m_Center: {x: -1.3481001, y: 0.53215003, z: 0}
+    m_Extent: {x: 1.1228, y: 3.92255, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -348,19 +348,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.6754501
+      value: -1.66865
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.19764996
+      value: 0.18999994
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 1.15785
+      value: 1.15355
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.87855
+      value: 3.8747997
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[0].x
@@ -474,19 +474,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.30055
+      value: -1.3048
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.20940006
+      value: 0.20235002
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 2.03145
+      value: 2.0377
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.902
+      value: 3.89745
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[2].x
@@ -584,19 +584,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
-      value: -1.2595
+      value: -1.2639999
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Center.y
-      value: 0.20209992
+      value: 0.1983999
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.x
-      value: 1.9925001
+      value: 1.9956
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_LocalBounds.m_Extent.y
-      value: 3.8986
+      value: 3.8909998
       objectReference: {fileID: 0}
     - target: {fileID: 523585023298286418, guid: 09e7050cff3e46444bf59a5e92847fdc, type: 3}
       propertyPath: m_ShapePath.Array.data[2].x
