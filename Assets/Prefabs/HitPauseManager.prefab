@@ -45,5 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pauseDuration: 0.1
-  _pauseTimeScale: 0
+  _pauseTimeScale: 0.6
   _resumeSpeed: 1

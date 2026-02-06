@@ -13,7 +13,8 @@ public class AudioManager : MonoBehaviour
     [Header("Sound Effects")]
     [SerializeField] private AudioClip logoAppearSFX;
     [SerializeField] private AudioClip drumHitSFX;
-    [SerializeField] private AudioClip samuraiDashSFX;
+    [SerializeField] private AudioClip dashInSFX;
+    [SerializeField] private AudioClip dashOutSFX;
     [SerializeField] private AudioClip swordClash1SFX;
     [SerializeField] private AudioClip swordClash2SFX;
     [SerializeField] private AudioClip swordClash3SFX;
@@ -90,7 +91,17 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySamuraiDash()
     {
-        PlaySFX(samuraiDashSFX);
+        PlaySFX(dashInSFX); // 向后兼容，默认播放DashIn音效
+    }
+
+    public void PlayDashIn()
+    {
+        PlaySFX(dashInSFX);
+    }
+
+    public void PlayDashOut()
+    {
+        PlaySFX(dashOutSFX);
     }
 
     public void PlaySwordClash1()

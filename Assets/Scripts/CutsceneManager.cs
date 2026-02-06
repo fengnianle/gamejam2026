@@ -361,6 +361,216 @@ public class CutsceneManager : MonoBehaviour
         }
     }
 
+    /// <summary> ----------------------------------------- 音频控制接口（调用AudioManager） ----------------------------------------- </summary>
+    
+    /// <summary>
+    /// 播放DashIn音效
+    /// </summary>
+    public void PlayDashInSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayDashIn();
+            GameLogger.Log("CutsceneManager: 已播放DashIn音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放DashIn音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放DashOut音效
+    /// </summary>
+    public void PlayDashOutSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayDashOut();
+            GameLogger.Log("CutsceneManager: 已播放DashOut音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放DashOut音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放武士冲刺音效（向后兼容，实际调用DashIn）
+    /// </summary>
+    public void PlaySamuraiDashSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySamuraiDash();
+            GameLogger.Log("CutsceneManager: 已播放武士冲刺音效（DashIn）", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放武士冲刺音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放Logo出现音效
+    /// </summary>
+    public void PlayLogoAppearSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayLogoAppear();
+            GameLogger.Log("CutsceneManager: 已播放Logo出现音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放Logo出现音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放鼓点音效
+    /// </summary>
+    public void PlayDrumHitSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayDrumHit();
+            GameLogger.Log("CutsceneManager: 已播放鼓点音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放鼓点音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放剑击音效1
+    /// </summary>
+    public void PlaySwordClash1SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash1();
+            GameLogger.Log("CutsceneManager: 已播放剑击音效1", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放剑击音效1！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放剑击音效2
+    /// </summary>
+    public void PlaySwordClash2SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash2();
+            GameLogger.Log("CutsceneManager: 已播放剑击音效2", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放剑击音效2！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放剑击音效3
+    /// </summary>
+    public void PlaySwordClash3SFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordClash3();
+            GameLogger.Log("CutsceneManager: 已播放剑击音效3", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放剑击音效3！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放随机剑击音效
+    /// </summary>
+    public void PlayRandomSwordClashSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayRandomSwordClash();
+            GameLogger.Log("CutsceneManager: 已播放随机剑击音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放随机剑击音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放日式鼓声音效
+    /// </summary>
+    public void PlayJapaneseDrumSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayJapaneseDrum();
+            GameLogger.Log("CutsceneManager: 已播放日式鼓声音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放日式鼓声音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放重鼓音效
+    /// </summary>
+    public void PlayHeavyDrumSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHeavyDrum();
+            GameLogger.Log("CutsceneManager: 已播放重鼓音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放重鼓音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放受伤音效
+    /// </summary>
+    public void PlayHurtSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHurt();
+            GameLogger.Log("CutsceneManager: 已播放受伤音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放受伤音效！", "CutsceneManager");
+        }
+    }
+    
+    /// <summary>
+    /// 播放拔剑音效
+    /// </summary>
+    public void PlaySwordUnsheathSFX()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySwordUnsheath();
+            GameLogger.Log("CutsceneManager: 已播放拔剑音效", "CutsceneManager");
+        }
+        else
+        {
+            GameLogger.LogWarning("CutsceneManager: AudioManager.Instance为null，无法播放拔剑音效！", "CutsceneManager");
+        }
+    }
+
     /// <summary> ----------------------------------------- 辅助方法 ----------------------------------------- </summary>
     /// <summary>
     /// 禁用角色Animator（在播放演出时避免角色自身动画干扰）

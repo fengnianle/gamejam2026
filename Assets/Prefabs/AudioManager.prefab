@@ -49,14 +49,15 @@ MonoBehaviour:
   backgroundSource: {fileID: 0}
   logoAppearSFX: {fileID: 0}
   drumHitSFX: {fileID: 8300000, guid: 003ea7c6419f24548ac89ad2c3d2bf3c, type: 3}
-  samuraiDashSFX: {fileID: 0}
+  dashInSFX: {fileID: 8300000, guid: 0a940ff23d9b2014eae43115fc9616b0, type: 3}
+  dashOutSFX: {fileID: 8300000, guid: c91ae1cda67113145a26bed04fdfad33, type: 3}
   swordClash1SFX: {fileID: 8300000, guid: 956fdf1b8553d284c84035b515937210, type: 3}
   swordClash2SFX: {fileID: 8300000, guid: 917a1f6565ab65748b28d0a965dddace, type: 3}
   swordClash3SFX: {fileID: 8300000, guid: f98b44e6d5cfbcc4e84e1dac0a8be9c2, type: 3}
   japaneseDrumSFX: {fileID: 8300000, guid: 7f7184b14f28f8648a11eaca9106a4b0, type: 3}
   swordUnsheathSFX: {fileID: 8300000, guid: 0ebf98ccffd76874da7d648109b7a64e, type: 3}
   heavyDrumSFX: {fileID: 8300000, guid: c33a03c7c9ec5bc4a82c837eeefe582a, type: 3}
-  hurtSFX: {fileID: 8300000, guid: ee18bd1675e01764ab0d540beee5a24b, type: 3}
+  hurtSFX: {fileID: 8300000, guid: bf9cdc5d30b414940a92219c5563c28c, type: 3}
   konamiCodeSFX: {fileID: 8300000, guid: 0ebf98ccffd76874da7d648109b7a64e, type: 3}
   gameBGM: {fileID: 8300000, guid: 7e123dc6552affe4b94f2dc9266c0fee, type: 3}
   forestWindBG: {fileID: 8300000, guid: dc282e3cccb9da540b23eedbf45785ed, type: 3}
