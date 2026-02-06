@@ -1184,6 +1184,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2893241741306514128, guid: 7f007a61c0934a94090393e878072b0c, type: 3}
+      propertyPath: leadTime
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6123520023893313695, guid: 7f007a61c0934a94090393e878072b0c, type: 3}
+      propertyPath: leadTime
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 6123520023893313695, guid: 7f007a61c0934a94090393e878072b0c, type: 3}
       propertyPath: pathRecorder
       value: 
