@@ -192,6 +192,11 @@ public class BossController : MonoBehaviour
                 {
                     PlayShockWaveEffect();
                 }
+                else if (waitTime > 0)
+                {
+                    // 如果不播放冲击波且有等待时间，播放Idle动画
+                    PlayIdleAnimation();
+                }
                 
                 // 等待指定时间后执行下一个动作
                 if (waitTime > 0)

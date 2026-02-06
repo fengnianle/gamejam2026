@@ -470,6 +470,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 637409371}
     - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
+      propertyPath: sparkLayer.m_Bits
+      value: 1079
+      objectReference: {fileID: 0}
+    - target: {fileID: 8135795672932548714, guid: eee515dd831a4324fb2fde52f5d00f9a, type: 3}
       propertyPath: playerLayer.m_Bits
       value: 119
       objectReference: {fileID: 0}
@@ -758,6 +762,10 @@ PrefabInstance:
     - target: {fileID: 7337119183674333552, guid: af1ee3220d7214b4eb9d9a2bdd96e1ca, type: 3}
       propertyPath: m_Name
       value: Spark
+      objectReference: {fileID: 0}
+    - target: {fileID: 7337119183674333552, guid: af1ee3220d7214b4eb9d9a2bdd96e1ca, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1100,7 +1108,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5604587766561790141, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
       propertyPath: m_CullingMask.m_Bits
-      value: 247
+      value: 1271
       objectReference: {fileID: 0}
     - target: {fileID: 7512342462868675665, guid: bbf0500014c7f46418f1325fb5ea94db, type: 3}
       propertyPath: m_CullingMask.m_Bits

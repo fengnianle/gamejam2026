@@ -434,6 +434,16 @@ public class GameLogger : MonoBehaviour
         Debug.Log($"<color=red>[DebugAttack]</color> 执行动作 {actionType}，持续时间 {duration:F1} 秒");
     }
 
+    /// <summary>
+    /// 战斗过程日志 - Player影子执行动作
+    /// </summary>
+    public static void LogCombatPlayerShadowAction(AttackType attackType, float timestamp)
+    {
+        if (!Instance.enableLogging || !Instance.debugCombatProcess) return;
+        
+        Debug.Log($"<color=cyan>[DebugAttack]</color> <color=grey>PlayerShadow</color> 执行动作 {attackType} (T+{timestamp:F2}s)");
+    }
+
     #endregion
 
     #region 辅助方法

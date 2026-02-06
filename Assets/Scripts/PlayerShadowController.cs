@@ -318,10 +318,13 @@ public class PlayerShadowController : MonoBehaviour
         float relativeTime = GameManager.GetGameElapsedTime();
         GameLogger.Log($"[SequenceDebug] PlayerShadow执行动作 - 索引:[{currentActionIndex}] 动作:{currentAction.attackType} 时长:{actionTimer:F2}秒 记录时间戳:{currentAction.timestamp:F2}s 实际播放时间:+{relativeTime:F2}s", "SequenceDebug");
 
+        // 使用新的战斗过程日志
+        GameLogger.LogCombatPlayerShadowAction(currentAction.attackType, relativeTime);
+
         // 播放对应的动画
         PlayActionAnimation(currentAction.attackType);
 
-        GameLogger.Log($"PlayerShadow: 执行动作 [{currentActionIndex}] {currentAction.attackType}，持续时间 {actionTimer:F2} 秒，记录时间戳 {currentAction.timestamp:F2}s", "PlayerShadow");
+        GameLogger.Log($"PlayerShadow: 执行动作 [{currentActionIndex}] {currentAction.attackType}，持续时间 {actionTimer:F2} 秒，记录时间戳 {currentAction.timestamp:F2}s, 实际播放时间 {relativeTime:F2}s", "PlayerShadow");
     }
 
     /// <summary>

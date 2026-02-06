@@ -97,6 +97,9 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("BossShadow层的LayerMask")]
     public LayerMask bossShadowLayer;
+
+    [Tooltip("特效及火花层的LayerMask（仅在观测实体时显示）")]
+    public LayerMask sparkLayer;
     
     [Tooltip("默认观测层（包含Player和Boss）")]
     public LayerMask defaultLayer;
@@ -800,9 +803,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // 初始化为默认层（观测实体Player和Boss）
-        shadowCamera.cullingMask = defaultLayer;
-        Debug.Log($"✓ GameManager: 幻影相机初始化完成，初始观测层级设置为 defaultLayer");
+        // 初始化为默认层（观测实体Player和Boss）加上Spark层
+        shadowCamera.cullingMask = defaultLayer | sparkLayer;
+        Debug.Log($"✓ GameManager: 幻影相机初始化完成，初始观测层级设置为 defaultLayer + sparkLayer");
     }
 
     /// <summary>
@@ -811,6 +814,7 @@ public class GameManager : MonoBehaviour
     /// - Player无历史序列 || 已播完 → 观测Player层
     /// - Boss有最远序列 && 未播完 → 观测BossShadow层
     /// - Boss无最远序列 || 已播完 → 观测Boss层
+    /// - 如果观测任意实体层，则同时观测Spark层
     /// </summary>
     public void UpdateShadowCameraLayers()
     {
@@ -830,6 +834,7 @@ public class GameManager : MonoBehaviour
 
         // 根据播放状态决定观测哪个层级
         LayerMask targetMask = 0;
+        bool shouldRenderSpark = false;
         
         // Player层级选择：有历史路径且未播完 → 观测PlayerShadow层
         if (playerHasPath && !playerShadowCompleted)
@@ -840,6 +845,7 @@ public class GameManager : MonoBehaviour
         else
         {
             targetMask |= playerLayer;
+            shouldRenderSpark = true; // 观测实体Player，需显示Spark
             Debug.Log("→ GameManager: 幻影相机观测 Player 层（无历史路径或已播完）");
         }
 
@@ -852,7 +858,15 @@ public class GameManager : MonoBehaviour
         else
         {
             targetMask |= bossLayer;
+            shouldRenderSpark = true; // 观测实体Boss，需显示Spark
             Debug.Log("→ GameManager: 幻影相机观测 Boss 层（无最远序列或已播完）");
+        }
+
+        // 如果需要显示Spark（观测了任意实体）
+        if (shouldRenderSpark)
+        {
+            targetMask |= sparkLayer;
+            Debug.Log("→ GameManager: 附加观测 Spark 层");
         }
 
         // 应用新的观测层级
